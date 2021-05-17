@@ -1,0 +1,28 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+button {
+    background-color: transparent;
+    border: none;
+    padding: 0.5rem;
+}
+button:focus {
+    background-color: #22a7f2;
+}
+#app {
+    position: relative;
+}
+#canvas {
+    border: 1px solid black;
+}
+.toolbar-container {
+    position: absolute;
+    background-color: #2c313c;
+    width: 100%;
+}
+.toolbar {
+    list-style-type: none;
+    display: flex;
+}
