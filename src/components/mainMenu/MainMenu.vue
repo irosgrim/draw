@@ -1,0 +1,30 @@
+<template>
+    <nav class="toolbar-container">
+      <ul class="toolbar">
+        <li>
+          <button type="button">
+                <img src="@/assets/icons/select.svg" alt="" style="margin-top: -0.25rem;">
+                </button>
+            </li>
+            <li>
+                <button type="button">
+                    <img src="@/assets/icons/rectangle.svg" alt="">
+                </button>
+            </li>
+            <li>
+                <button type="button">
+                    <img src="@/assets/icons/circle.svg" alt="">
+                </button>
+            </li>
+        </ul>
+    </nav>
+</template>
+
+<script lang="ts">
+import { Vue, Component } from "vue-property-decorator";
+
+@Component
+export default class MainMenu extends Vue {
+
+}
+</script>
