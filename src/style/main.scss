@@ -15,11 +15,15 @@ button:focus {
     position: relative;
 }
 #canvas {
-    margin-top: 45px;
-    border: 1px solid black;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 .toolbar-container {
     position: absolute;
+    z-index: 1;
     background-color: #2c313c;
     width: 100%;
 }
