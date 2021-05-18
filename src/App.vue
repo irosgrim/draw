@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <MainMenu />
-    <Canvas />
+    <MainMenu @selected-tool="selectedTool = $event"/>
+    <Canvas :selectedTool="selectedTool" @mouse-up="resetSelectedTool"/>
   </div>
 </template>
 
@@ -17,7 +17,13 @@ import Canvas from '@/components/canvas/Canvas.vue';
         MainMenu
     }
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+    public selectedTool = 'select';
+
+    public resetSelectedTool() {
+        this.selectedTool = 'select';
+    }
+}
 </script>
 
 <style lang="scss">

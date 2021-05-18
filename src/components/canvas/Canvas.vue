@@ -3,15 +3,25 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator';
+import { Vue, Component, Prop } from 'vue-property-decorator';
 
 let timer: number;
 @Component
 export default class Canvas extends Vue {
+    @Prop({default: 'select'}) private selectedTool!: string;
+    
     private canvas: HTMLCanvasElement | null = null;
     private mouseIsDown = false;
     private offsetX = 0;
     private offsetY = 0;
+    private startPoint = {
+        x: 0,
+        y: 0
+    }
+    private endPoint = {
+        x: 0,
+        y: 0
+    }
 
     private shapes = [
         {
@@ -19,7 +29,11 @@ export default class Canvas extends Vue {
             y: 80,
             width: 80,
             height: 40,
-            fill: "green",
+            stroke: {
+                width: 1,
+                style: 'black'
+            },
+            fill: null,
             type: "rectangle",
             isMoving: false,
             isSelected: false,
@@ -29,6 +43,7 @@ export default class Canvas extends Vue {
             y: 80,
             width: 60,
             height: 40,
+            stroke: null,
             fill: "red",
             type: "rectangle",
             isMoving: false,
@@ -39,6 +54,7 @@ export default class Canvas extends Vue {
             y: 80,
             width: 60,
             height: 40,
+            stroke: null,
             fill: "orange",
             type: "rectangle",
             isMoving: false,
@@ -49,6 +65,7 @@ export default class Canvas extends Vue {
             y: 80,
             width: 60,
             height: 40,
+            stroke: null,
             fill: "red",
             type: "rectangle",
             isMoving: false,
@@ -95,40 +112,63 @@ export default class Canvas extends Vue {
 
     public mouseDown(e: MouseEvent) {
         e.preventDefault();
-        const mx = e.clientX - this.offsetX;
-        const my = e.clientY - this.offsetY;
+        const mouseX = e.clientX - this.offsetX;
+        const mouseY = e.clientY - this.offsetY;
         this.mouseIsDown = true;
-
-        for (let x in this.shapes) {
-            const shape = this.shapes[x];
-            if (
-                mx > shape.x &&
-                mx < shape.x + shape.width &&
-                my > shape.y &&
-                my < shape.y + shape.height
-            ) {
-                shape.isMoving = true;
-                shape.isSelected = true;
-            } else {
-                shape.isSelected = false;
+        if(this.selectedTool === 'select') {
+            for (let shape of this.shapes) {
+                if (this.mouseIsOverElement(e, shape)) {
+                    console.log('here');
+                    shape.isMoving = true;
+                    shape.isSelected = true;
+                } else {
+                    console.log('false')
+                    shape.isSelected = false;
+                }
             }
+            return;
         }
+        this.$set(this.startPoint, 'x', mouseX);
+        this.$set(this.startPoint, 'y', mouseY);
     }
 
     public mouseUp(e: MouseEvent): void {
         e.preventDefault();
         e.stopPropagation();
+        const mouseX = e.clientX - this.offsetX;
+        const mouseY = e.clientY - this.offsetY;
         this.mouseIsDown = false;
-        for (const x in this.shapes) {
-            this.shapes[x].isMoving = false;
+        if(this.selectedTool === 'select') {
+            for (const shape of this.shapes) {
+                shape.isMoving = false;
+                shape.isSelected = false;
+            }
+            return;
         }
+        this.$set(this.endPoint, 'x', mouseX);
+        this.$set(this.endPoint, 'y', mouseY);
+        if(this.selectedTool === 'rectangle') {
+            this.drawNewRectangle();
+        }
+        this.draw();
+        this.$emit('mouse-up');
     }
 
     public mouseMove(e: MouseEvent): void {
         e.preventDefault();
         e.stopPropagation();
+
         const dx = e.movementX;
         const dy = e.movementY;
+        if(this.selectedTool === 'select') {
+            for (let shape of this.shapes) {
+                if(this.mouseIsOverElement(e, shape)) {
+                    shape.isSelected = true;
+                } else {
+                    shape.isSelected = false;
+                }
+            }
+        }
         if (this.mouseIsDown) {
             for (let shape of this.shapes) {
                 if (shape.isMoving) {
@@ -140,13 +180,54 @@ export default class Canvas extends Vue {
         }
     }
 
+    public mouseIsOverElement(e: MouseEvent, shape: any): boolean {
+        const mouseX = e.clientX - this.offsetX;
+        const mouseY = e.clientY - this.offsetY;
+        if (
+            mouseX > shape.x &&
+            mouseX < shape.x + shape.width &&
+            mouseY > shape.y &&
+            mouseY < shape.y + shape.height
+            ) {
+                return true;
+            } else {
+                return false;
+            }
+    }
+
+    public drawNewRectangle(): void {
+        const newRectangle = {
+            x: this.startPoint.x,
+            y: this.startPoint.y,
+            width: this.endPoint.x - this.startPoint.x,
+            height: this.endPoint.y - this.startPoint.y,
+            stroke: null,
+            fill: "pink",
+            type: "rectangle",
+            isMoving: false,
+            isSelected: false,
+        };
+        this.shapes = [...this.shapes, newRectangle];
+    }
+
     public draw(): void {
         const context = this.canvas?.getContext('2d');
         this.clear();
-        for (const x in this.shapes) {
-            const shape = this.shapes[x];
-            context!.fillStyle = shape.fill;
-            context!.fillRect(shape.x, shape.y, shape.width, shape.height);
+        for (const shape of this.shapes) {
+            if(shape.fill) {
+                context!.fillStyle = shape.fill;
+                context!.fillRect(shape.x, shape.y, shape.width, shape.height);
+            }
+            if(shape.stroke) {
+                context!.strokeStyle = shape.stroke.style;
+                context!.lineWidth = shape.stroke.width;
+                context!.strokeRect(shape.x, shape.y, shape.width, shape.height)
+            }
+            if(shape.isSelected) {
+                context!.strokeStyle = '#22a7f2';
+                context!.lineWidth = 1;
+                context!.strokeRect(shape.x, shape.y, shape.width, shape.height);
+            }
             context!.font = "10px Arial";
             context!.fillText(shape.isSelected.toString(), shape.x + shape.width, shape.y);
         }
