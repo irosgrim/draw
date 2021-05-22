@@ -3,7 +3,7 @@
       <ul class="toolbar">
         <li>
           <button type="button" @click="$emit('selected-tool', 'select')">
-                <img src="@/assets/icons/select.svg" alt="" style="margin-top: -0.25rem;">
+                <img src="@/assets/icons/select.svg" alt="" style="margin-left: -0.25rem;">
                 </button>
             </li>
             <li>

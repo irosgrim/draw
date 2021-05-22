@@ -126,6 +126,7 @@ export default class Canvas extends Vue {
                     shape.isSelected = false;
                 }
             }
+            this.draw();
             return;
         }
         this.$set(this.startPoint, 'x', mouseX);
