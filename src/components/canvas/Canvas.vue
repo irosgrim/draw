@@ -25,7 +25,7 @@ export default class Canvas extends Vue {
 
     private shapes = [
         {
-            x: 10,
+            x: 80,
             y: 80,
             width: 80,
             height: 40,
@@ -39,7 +39,7 @@ export default class Canvas extends Vue {
             isSelected: false,
         },
         {
-            x: 100,
+            x: 180,
             y: 80,
             width: 60,
             height: 40,
@@ -50,7 +50,7 @@ export default class Canvas extends Vue {
             isSelected: false,
         },
         {
-            x: 180,
+            x: 260,
             y: 80,
             width: 60,
             height: 40,
@@ -61,7 +61,7 @@ export default class Canvas extends Vue {
             isSelected: false,
         },
         {
-            x: 260,
+            x: 340,
             y: 80,
             width: 60,
             height: 40,

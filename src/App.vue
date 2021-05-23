@@ -1,7 +1,13 @@
 <template>
   <div id="app">
-    <MainMenu @selected-tool="selectedTool = $event"/>
-    <Canvas :selectedTool="selectedTool" @mouse-up="resetSelectedTool"/>
+    <MainMenu 
+        @selected-tool="selectedTool = $event" 
+        :selected-tool="selectedTool"
+    />
+    <Canvas 
+        :selectedTool="selectedTool"
+        @mouse-up="resetSelectedTool"
+    />
   </div>
 </template>
 

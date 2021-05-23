@@ -11,7 +11,7 @@ button {
 
 }
 button:focus {
-    background-color: #c9e9fc;
+    // background-color: #c9e9fc;
 }
 #app {
     position: relative;
@@ -44,4 +44,7 @@ button:focus {
     li {
         width: 100%;
     }
+}
+.selected {
+    background-color: #c9e9fc;
 }
