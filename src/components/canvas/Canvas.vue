@@ -118,11 +118,9 @@ export default class Canvas extends Vue {
         if(this.selectedTool === 'select') {
             for (let shape of this.shapes) {
                 if (this.mouseIsOverElement(e, shape)) {
-                    console.log('here');
                     shape.isMoving = true;
                     shape.isSelected = true;
                 } else {
-                    console.log('false')
                     shape.isSelected = false;
                 }
             }
@@ -159,6 +157,8 @@ export default class Canvas extends Vue {
         e.preventDefault();
         e.stopPropagation();
 
+        const mouseX = e.clientX - this.offsetX;
+        const mouseY = e.clientY - this.offsetY;
         const dx = e.movementX;
         const dy = e.movementY;
         if(this.selectedTool === 'select') {
@@ -178,6 +178,10 @@ export default class Canvas extends Vue {
                 }
             }
             this.draw();
+        }
+
+        if(this.mouseIsDown && this.selectedTool === 'rectangle') {
+            this.drawShapeGhost({x: mouseX, y: mouseY},'rectangle');
         }
     }
 
@@ -211,6 +215,16 @@ export default class Canvas extends Vue {
         this.shapes = [...this.shapes, newRectangle];
     }
 
+    public drawShapeGhost(coords: {x: number, y: number}, shape: string): void {
+        const context = this.canvas?.getContext('2d');
+        context!.setLineDash([5, 3]);
+        context!.strokeStyle = 'black';
+        context!.lineWidth = 1;
+        context!.fillStyle = 'rgba(255, 191, 203, 0.3)';
+        context!.fillRect(this.startPoint.x, this.startPoint.y, coords.x - this.startPoint.x, coords.y - this.startPoint.y);
+        context!.strokeRect(this.startPoint.x, this.startPoint.y,  coords.x - this.startPoint.x, coords.y - this.startPoint.y);
+    }
+
     public draw(): void {
         const context = this.canvas?.getContext('2d');
         this.clear();
@@ -220,6 +234,7 @@ export default class Canvas extends Vue {
                 context!.fillRect(shape.x, shape.y, shape.width, shape.height);
             }
             if(shape.stroke) {
+                context!.setLineDash([]);
                 context!.strokeStyle = shape.stroke.style;
                 context!.lineWidth = shape.stroke.width;
                 context!.strokeRect(shape.x, shape.y, shape.width, shape.height)

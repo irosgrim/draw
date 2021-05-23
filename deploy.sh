@@ -23,3 +23,4 @@ git commit -m 'deploy'
 git push -f git@github.com:irosgrim/draw.git master:gh-pages
 
 cd -
+rm -rf dist

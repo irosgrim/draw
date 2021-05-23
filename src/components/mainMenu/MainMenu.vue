@@ -1,8 +1,8 @@
 <template>
-    <nav class="toolbar-container">
+    <nav class="toolbar-container" ref="toolbar">
       <ul class="toolbar">
             <li>
-                <button>...</button>
+                <button type="button" ref="dragBtn">...</button>
             </li>
             <li v-for="menuItem of menu.defaultMenu" :key="menuItem.label">
                 <button 
