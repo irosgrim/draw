@@ -80,7 +80,90 @@ export default class Canvas extends Vue {
     }
 
     public onKeyDown(e: KeyboardEvent) {
-        console.log(e);
+        const shiftIsPressed = e.shiftKey;
+        const ctrlIsPressed = e.ctrlKey;
+        if(e.code.indexOf('Arrow') > -1) {
+            this.nudgeSelection(e.code, {shift: shiftIsPressed, ctrl: ctrlIsPressed})
+            this.draw();
+        }
+        if(e.code === 'Backspace' || e.code === 'Delete') {
+            this.deleteSelection();
+            this.draw();
+        }
+
+    }
+    public deleteSelection() {
+        for(const shape of this.shapes) {
+            if(shape.isSelected) {
+                this.shapes = this.shapes.filter(x => !x.isSelected);
+            }
+        }
+    }
+
+    public nudgeSelection(key: string, modifier: {shift: boolean, ctrl: boolean}) {
+        switch(key) {
+            case 'ArrowRight':
+                for(const shape of this.shapes) {
+                    if(shape.isSelected) {
+                        if(modifier.shift) {
+                            shape.x += 20;
+                        }
+                        if(modifier.ctrl) {
+                            shape.x += 1;
+                        }
+                        if(!modifier.shift && !modifier.ctrl) {
+                            shape.x += 10;
+                        }
+                    }
+                }
+                break;
+            case 'ArrowLeft':
+                for(const shape of this.shapes) {
+                    if(shape.isSelected) {
+                        if(modifier.shift) {
+                            shape.x -= 20;
+                        }
+                        if(modifier.ctrl) {
+                            shape.x -= 1;
+                        }
+                        if(!modifier.shift && !modifier.ctrl) {
+                            shape.x -= 10;
+                        }
+                    }
+                }
+                break;
+             case 'ArrowUp':
+                for(const shape of this.shapes) {
+                    if(shape.isSelected) {
+                        if(modifier.shift) {
+                            shape.y -= 20;
+                        }
+                        if(modifier.ctrl) {
+                            shape.y -= 1;
+                        }
+                        if(!modifier.shift && !modifier.ctrl) {
+                            shape.y -= 10;
+                        }
+                    }
+                }
+                break;
+            case 'ArrowDown':
+                for(const shape of this.shapes) {
+                    if(shape.isSelected) {
+                        if(modifier.shift) {
+                            shape.y += 20;
+                        }
+                        if(modifier.ctrl) {
+                            shape.y += 1;
+                        }
+                        if(!modifier.shift && !modifier.ctrl) {
+                            shape.y += 10;
+                        }
+                    }
+                }
+                break;
+        }
+        
     }
     public onResize(e: Event) {
         this.resizeCanvas();
