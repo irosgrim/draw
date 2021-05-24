@@ -15,6 +15,7 @@
 import { Component, Vue } from "vue-property-decorator";
 import MainMenu from '@/components/mainMenu/MainMenu.vue';
 import Canvas from '@/components/canvas/Canvas.vue';
+import { Tool } from './store/toolbar/types';
 
 
 @Component({
@@ -24,10 +25,10 @@ import Canvas from '@/components/canvas/Canvas.vue';
     }
 })
 export default class App extends Vue {
-    public selectedTool = 'select';
+    public selectedTool: Tool = 'SELECT';
 
     public resetSelectedTool() {
-        this.selectedTool = 'select';
+        this.selectedTool = 'SELECT';
     }
 }
 </script>

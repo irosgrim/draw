@@ -4,12 +4,23 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-property-decorator';
+import {
+  State,
+  namespace
+} from 'vuex-class'
+import { PropertiesStore } from '@/store/properties/types';
+import { Tool, ToolbarStore } from '@/store/toolbar/types';
+
+const properties = namespace('properties');
+const toolbar = namespace('toolbar');
 
 let timer: number;
 @Component
 export default class Canvas extends Vue {
-    @Prop({default: 'select'}) private selectedTool!: string;
-    
+    @Prop({default: 'SELECT'}) private selectedTool!: Tool;
+    @State('properties') private properties!: PropertiesStore;
+    @State('toolbar') private toolbar!: ToolbarStore;
+
     private canvas: HTMLCanvasElement | null = null;
     private mouseIsDown = false;
     private offsetX = 0;
@@ -80,15 +91,18 @@ export default class Canvas extends Vue {
     }
 
     public onKeyDown(e: KeyboardEvent) {
+        e.preventDefault();
         const shiftIsPressed = e.shiftKey;
-        const ctrlIsPressed = e.ctrlKey;
-        if(e.code.indexOf('Arrow') > -1) {
-            this.nudgeSelection(e.code, {shift: shiftIsPressed, ctrl: ctrlIsPressed})
-            this.draw();
-        }
-        if(e.code === 'Backspace' || e.code === 'Delete') {
-            this.deleteSelection();
-            this.draw();
+        const ctrlIsPressed = e.ctrlKey || e.metaKey;
+        if(this.selectedTool === 'SELECT') {
+            if(e.code.indexOf('Arrow') > -1) {
+                this.nudgeSelection(e.code, {shift: shiftIsPressed, ctrl: ctrlIsPressed})
+                this.draw();
+            }
+            if(e.code === 'Backspace' || e.code === 'Delete') {
+                this.deleteSelection();
+                this.draw();
+            }
         }
 
     }
@@ -195,10 +209,11 @@ export default class Canvas extends Vue {
 
     public mouseDown(e: MouseEvent) {
         e.preventDefault();
+        (this.$refs.canvas as HTMLCanvasElement).focus();
         const mouseX = e.clientX - this.offsetX;
         const mouseY = e.clientY - this.offsetY;
         this.mouseIsDown = true;
-        if(this.selectedTool === 'select') {
+        if(this.selectedTool === 'SELECT') {
             for (let shape of this.shapes) {
                 if (this.mouseIsOverElement(e, shape)) {
                     shape.isMoving = true;
@@ -220,7 +235,7 @@ export default class Canvas extends Vue {
         const mouseX = e.clientX - this.offsetX;
         const mouseY = e.clientY - this.offsetY;
         this.mouseIsDown = false;
-        if(this.selectedTool === 'select') {
+        if(this.selectedTool === 'SELECT') {
             for (const shape of this.shapes) {
                 shape.isMoving = false;
                 shape.isSelected = false;
@@ -229,7 +244,7 @@ export default class Canvas extends Vue {
         }
         this.$set(this.endPoint, 'x', mouseX);
         this.$set(this.endPoint, 'y', mouseY);
-        if(this.selectedTool === 'rectangle') {
+        if(this.selectedTool === 'RECTANGLE') {
             this.drawNewRectangle();
         }
         this.draw();
@@ -244,7 +259,7 @@ export default class Canvas extends Vue {
         const mouseY = e.clientY - this.offsetY;
         const dx = e.movementX;
         const dy = e.movementY;
-        if(this.selectedTool === 'select') {
+        if(this.selectedTool === 'SELECT') {
             for (let shape of this.shapes) {
                 if(this.mouseIsOverElement(e, shape)) {
                     shape.isSelected = true;
@@ -263,8 +278,8 @@ export default class Canvas extends Vue {
             this.draw();
         }
 
-        if(this.mouseIsDown && this.selectedTool === 'rectangle') {
-            this.drawShapeGhost({x: mouseX, y: mouseY},'rectangle');
+        if(this.mouseIsDown && this.selectedTool === 'RECTANGLE') {
+            this.drawShapeGhost({x: mouseX, y: mouseY},'RECTANGLE');
         }
     }
 
@@ -309,27 +324,31 @@ export default class Canvas extends Vue {
     }
 
     public draw(): void {
-        const context = this.canvas?.getContext('2d');
         this.clear();
         for (const shape of this.shapes) {
-            if(shape.fill) {
-                context!.fillStyle = shape.fill;
-                context!.fillRect(shape.x, shape.y, shape.width, shape.height);
+            const context = this.canvas?.getContext('2d') as CanvasRenderingContext2D;
+            this.drawShape(shape, context);
+        }
+    }
+
+    private drawShape(shape: any, context: CanvasRenderingContext2D) {
+        if(shape.fill) {
+                context.fillStyle = shape.fill;
+                context.fillRect(shape.x, shape.y, shape.width, shape.height);
             }
             if(shape.stroke) {
-                context!.setLineDash([]);
-                context!.strokeStyle = shape.stroke.style;
-                context!.lineWidth = shape.stroke.width;
-                context!.strokeRect(shape.x, shape.y, shape.width, shape.height)
+                context.setLineDash([]);
+                context.strokeStyle = shape.stroke.style;
+                context.lineWidth = shape.stroke.width;
+                context.strokeRect(shape.x, shape.y, shape.width, shape.height);
             }
             if(shape.isSelected) {
-                context!.strokeStyle = '#22a7f2';
-                context!.lineWidth = 1;
-                context!.strokeRect(shape.x, shape.y, shape.width, shape.height);
+                context.strokeStyle = '#22a7f2';
+                context.lineWidth = 1;
+                context.strokeRect(shape.x, shape.y, shape.width, shape.height);
             }
-            context!.font = "10px Arial";
-            context!.fillText(shape.isSelected.toString(), shape.x + shape.width, shape.y);
-        }
+            context.font = "10px Arial";
+            context.fillText(shape.isSelected.toString(), shape.x + shape.width, shape.y);
     }
 
     public clear(): void {

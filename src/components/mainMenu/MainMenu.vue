@@ -4,7 +4,7 @@
             <li>
                 <button type="button" ref="dragBtn">...</button>
             </li>
-            <li v-for="menuItem of menu.defaultMenu" :key="menuItem.label">
+            <li v-for="menuItem of defaultMenu" :key="menuItem.label">
                 <button 
                     type="button" 
                     @click="$emit('selected-tool', menuItem.label)"
@@ -18,6 +18,7 @@
 </template>
 
 <script lang="ts">
+import { Tool } from '@/store/toolbar/types';
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 interface DefaultMenu {
     label: string;
@@ -29,51 +30,41 @@ interface Dictionary<T> {
     [key: string] : T;
 }
 
-type Tool = 'select' | 'rectangle' | 'circle';
-class Menu {
-    constructor(public defaultMenu: Dictionary<DefaultMenu>) {
-    }
-    public setActiveTool(tool: Tool) {
-        this.resetMenu();
-        this.defaultMenu[tool].selected = true;
-    }
-    private resetMenu() {
-        for(const t in this.defaultMenu) {
-            this.defaultMenu[t].selected = false;
-        }
-    }
-}
-
-
 @Component
 export default class MainMenu extends Vue {
     @Prop() selectedTool!: Tool;
     public defaultMenu: Dictionary<DefaultMenu> = {
-        select: {
-            label: 'select',
+        SELECT: {
+            label: 'SELECT',
             icon: require('@/assets/icons/select.svg'),
             selected: true
         },
-        rectangle: {
-            label: 'rectangle',
+        RECTANGLE: {
+            label: 'RECTANGLE',
             icon: require('@/assets/icons/rectangle.svg'),
             selected: false
         },
-        circle: {
-            label: 'circle',
+        CIRCLE: {
+            label: 'CIRCLE',
             icon: require('@/assets/icons/circle.svg'),
             selected: false
         }
     };
-    public menu: Menu | null = null;
-
-    created() {
-        this.menu = new Menu(this.defaultMenu);
-    }
 
     @Watch('selectedTool')
     private onSelectedToolChange(tool: Tool) {
-        this.menu!.setActiveTool(tool);
+        this.setActiveTool(tool);
+    }
+
+    public setActiveTool(tool: Tool) {
+        this.resetMenu();
+        this.defaultMenu[tool].selected = true;
+    }
+
+    private resetMenu() {
+        for(const tool in this.defaultMenu) {
+            this.defaultMenu[tool].selected = false;
+        }
     }
 }
 </script>
