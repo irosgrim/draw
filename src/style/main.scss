@@ -8,11 +8,12 @@ button {
     border: none;
     padding: 0.5rem;
     width: 100%;
+    &:focus, 
+    &:active {
+        outline: none;
+    }
+}
 
-}
-button:focus {
-    // background-color: #c9e9fc;
-}
 #app {
     position: relative;
 }
