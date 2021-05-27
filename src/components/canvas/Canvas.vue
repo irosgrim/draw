@@ -4,7 +4,7 @@
 
 <script lang="ts">
 import { uid } from 'uid';
-import { ShapeCoords, ShapeName, ShapeElement, Stroke } from '@/Types/types';
+import { ShapeCoords, ShapeName, ShapeElement, Stroke, Coords, PolarCoordinate } from '@/Types/types';
 import { Vue, Component, Prop } from 'vue-property-decorator';
 import {
   State,
@@ -24,6 +24,7 @@ export default class Canvas extends Vue {
     @State('toolbar') private toolbar!: ToolbarStore;
 
     private canvas: HTMLCanvasElement | null = null;
+    private context: CanvasRenderingContext2D | null = null;
     private mouseIsDown = false;
     private offsetX = 0;
     private offsetY = 0;
@@ -41,6 +42,7 @@ export default class Canvas extends Vue {
         this.setupCanvas();
         window.addEventListener('resize', this.onResize);
         document.addEventListener("keydown", this.onKeyDown);
+        document.addEventListener("keyup", this.onKeyUp);
         this.draw();
     }
 
@@ -59,6 +61,25 @@ export default class Canvas extends Vue {
             }
         }
 
+    }
+
+    private onKeyUp(e: KeyboardEvent) {
+        e.preventDefault();
+        const keyCode = e.key.toLowerCase();
+        switch(keyCode) {
+            case 'h':
+                this.$emit('select-tool', 'PAN');
+                break;
+            case 'v':
+                this.$emit('select-tool', 'SELECT');
+                break;
+            case 'r':
+                this.$emit('select-tool', 'RECTANGLE');
+                break;
+            case 'o':
+                this.$emit('select-tool', 'CIRCLE');
+                break;
+        }
     }
     public deleteSelection() {
         for(const shape of this.shapes) {
@@ -150,6 +171,7 @@ export default class Canvas extends Vue {
 
     public setupCanvas(): void {
         this.canvas = this.$refs.canvas as HTMLCanvasElement;
+        this.context = this.canvas.getContext('2d');
         this.resizeCanvas();
         const canvasBounding = this.canvas.getBoundingClientRect();
         this.offsetX = canvasBounding.left;
@@ -179,6 +201,7 @@ export default class Canvas extends Vue {
             this.draw();
             return;
         }
+        
         for (const shape of this.shapes) {
             shape.isSelected = false;
         }
@@ -201,22 +224,28 @@ export default class Canvas extends Vue {
             }
             return;
         }
+        
         this.$set(this.endPoint, 'x', mouseX);
         this.$set(this.endPoint, 'y', mouseY);
-        const s = new Shape(this.selectedTool, { coords: {start: {...this.startPoint}, end: {...this.endPoint}}, fill: 'pink'});
-        this.shapes = [...this.shapes, s];
-        this.draw();
+        if(['RECTANGLE', 'CIRCLE'].includes(this.selectedTool)) {
+            // @ts-ignore
+            const s = new Shape(this.selectedTool, { coords: {start: {...this.startPoint}, end: {...this.endPoint}}, fill: 'pink'});
+            this.shapes = [...this.shapes, s];
+            this.draw();
+        }
         this.$emit('mouse-up');
     }
 
     public mouseMove(e: MouseEvent): void {
         e.preventDefault();
         e.stopPropagation();
-
         const mouseX = e.clientX - this.offsetX;
         const mouseY = e.clientY - this.offsetY;
         const dx = e.movementX;
         const dy = e.movementY;
+        if(!this.mouseDown) {
+            return;
+        }
         if(this.selectedTool === 'SELECT' && this.mouseIsDown) {
             for (let shape of this.shapes) {
                if(shape.isMoving) {
@@ -225,9 +254,15 @@ export default class Canvas extends Vue {
                }
             }
         }
+        if(this.selectedTool === 'PAN' && this.mouseIsDown) {
+            console.log('panning');
+        }
         this.draw();
         if(this.mouseIsDown && this.selectedTool === 'RECTANGLE') {
-            this.drawShapeGhost({x: mouseX, y: mouseY},'RECTANGLE');
+            this.drawShapeGhost({x: mouseX, y: mouseY}, this.context!, 'RECTANGLE');
+        }
+        if(this.mouseIsDown && this.selectedTool === 'CIRCLE') {
+            this.drawShapeGhost({x: mouseX, y: mouseY},this.context!, 'CIRCLE');
         }
     }
 
@@ -246,20 +281,37 @@ export default class Canvas extends Vue {
             }
     }
 
-    public drawShapeGhost(coords: {x: number, y: number}, shape: string): void {
-        const context = this.canvas?.getContext('2d');
+    public drawShapeGhost(coords: {x: number, y: number}, context: CanvasRenderingContext2D, shape: ShapeName): void {
         context!.setLineDash([5, 3]);
         context!.strokeStyle = 'black';
         context!.lineWidth = 1;
         context!.fillStyle = 'rgba(255, 191, 203, 0.3)';
-        context!.fillRect(this.startPoint.x, this.startPoint.y, coords.x - this.startPoint.x, coords.y - this.startPoint.y);
-        context!.strokeRect(this.startPoint.x, this.startPoint.y,  coords.x - this.startPoint.x, coords.y - this.startPoint.y);
+        switch(shape) {
+            case 'RECTANGLE':
+                context!.fillRect(this.startPoint.x, this.startPoint.y, coords.x - this.startPoint.x, coords.y - this.startPoint.y);
+                context!.strokeRect(this.startPoint.x, this.startPoint.y,  coords.x - this.startPoint.x, coords.y - this.startPoint.y);
+                break;
+            case 'CIRCLE':
+                context.beginPath();
+                context.ellipse(
+                    coords.x - ((coords.x - this.startPoint.x) / 2), 
+                    coords.y - ((coords.y - this.startPoint.y) / 2), 
+                    (coords.x - this.startPoint.x) / 2, 
+                    (coords.y - this.startPoint.y) / 2, 
+                    0,
+                    0,
+                    2*Math.PI
+                );
+                context.stroke();
+                context.closePath();
+                break;
+        }
     }
 
     public draw(): void {
         this.clear();
         for (const shape of this.shapes) {
-            shape.drawShape(this.canvas!);
+            shape.drawShape(this.context!);
         }
     }
 
@@ -282,7 +334,7 @@ class Shape {
     public height = 0;
     public stroke: Stroke | null = null;
     public fill = '';
-    public type = '';
+    public type: ShapeName | '' = '';
     public _isMoving = false;
     public _isSelected = false;
     
@@ -327,39 +379,146 @@ class Shape {
         this._isMoving = value;
     }
 
-    public drawShape(canvas: HTMLCanvasElement) {
-        const context = canvas.getContext('2d') as CanvasRenderingContext2D;
+    public drawShape(context: CanvasRenderingContext2D) {
+        switch(this.type) {
+            case 'RECTANGLE':
+                this.drawRectangle(context);
+                break;
+            case 'CIRCLE':
+                this.drawCircle(context)
+                break;
 
+
+        }
+    }
+    private drawCircle(context: CanvasRenderingContext2D) {
+        context.beginPath();
         if(this.fill) {
-                context.fillStyle = this.fill;
-                context.fillRect(this.x, this.y, this.width, this.height);
-            }
-            if(this.stroke) {
-                context.setLineDash([]);
-                context.strokeStyle = this.stroke.style;
-                context.lineWidth = this.stroke.width;
-                context.strokeRect(this.x, this.y, this.width, this.height);
-            }
-            if(this.isSelected) {
-                context.setLineDash([]);
-                context.lineWidth = 1;
+            context.fillStyle = this.fill;
+            context.ellipse(this.x + this.width/2, this.y + this.height/2, this.width/2, this.height/2, 0, 0, 2*Math.PI);
+            context.fill();
+        }
+        if(this.stroke) {
+            context.setLineDash([]);
+            context.strokeStyle = this.stroke.style;
+            context.lineWidth = this.stroke.width;
+            context.ellipse(this.x + this.width/2, this.y + this.height/2, this.width/2, this.height/2, 0, 0, 2*Math.PI);
 
-                context.strokeStyle = '#2ea5f4';
-                context.strokeRect(this.x, this.y, this.width, this.height);
+        }
 
-                context.fillStyle = '#ffffff';
-                context.fillRect(this.x - 2.5, this.y - 2.5, 5, 5);
-                context.fillRect(this.x + this.width - 2.5, this.y - 2.5, 5, 5);
-                context.fillRect(this.x - 2.5, this.y + this.height - 2.5, 5, 5);
-                context.fillRect(this.x + this.width - 2.5, this.y + this.height - 2.5, 5, 5);
-                context.strokeStyle = '#000000';
-                context.strokeRect(this.x - 2.5, this.y - 2.5, 5, 5);
-                context.strokeRect(this.x + this.width - 2.5, this.y - 2.5, 5, 5);
-                context.strokeRect(this.x - 2.5, this.y + this.height - 2.5, 5, 5);
-                context.strokeRect(this.x + this.width - 2.5, this.y + this.height - 2.5, 5, 5);
+        if(this.isSelected) {
+            this.drawPolarCoordinates(context);
+        }
+        context.closePath();
+    }
+    private drawPolarCoordinates(context: CanvasRenderingContext2D) {
+        context.setLineDash([]);
+        context.lineWidth = 1;
+        context.strokeStyle = '#00a7f9';
+        context.strokeRect(this.x, this.y, this.width, this.height);
+        (["NW", "NE", "SW", "SE"] as PolarCoordinate[]).forEach(x => new ResizeHandler(x, {x: this.x, y: this.y}, this.width, this.height, context));
+    }
 
-            }
+    private drawRectangle(context: CanvasRenderingContext2D) {
+        if(this.fill) {
+            context.fillStyle = this.fill;
+            context.fillRect(this.x, this.y, this.width, this.height);
+        }
+        if(this.stroke) {
+            context.setLineDash([]);
+            context.strokeStyle = this.stroke.style;
+            context.lineWidth = this.stroke.width;
+            context.strokeRect(this.x, this.y, this.width, this.height);
+        }
+        if(this.isSelected) {
+            context.setLineDash([]);
+            context.lineWidth = 1;
+            context.strokeStyle = '#00a7f9';
+            context.strokeRect(this.x, this.y, this.width, this.height);
+            (["NW", "NE", "SW", "SE"] as PolarCoordinate[]).forEach(x => new ResizeHandler(x, {x: this.x, y: this.y}, this.width, this.height, context));
+        }
     }
 
 }
+
+class Mouse {
+    private canvas : HTMLCanvasElement;
+    private offsetX = 0;
+    private offsetY = 0;
+    private mouseX  = 0;
+    private mouseY  = 0;
+
+    constructor(e: MouseEvent, canvas: HTMLCanvasElement) {
+        this.canvas  = canvas;
+        const canvasBounding = this.canvas.getBoundingClientRect();
+        this.offsetX = canvasBounding.left;
+        this.offsetY = canvasBounding.top;
+        this.mouseX = e.clientX - this.offsetX;
+        this.mouseY = e.clientY - this.offsetY;
+    }
+    public get mousePosition(): Coords {
+        return {
+            x: this.mouseX,
+            y: this.mouseY
+        }
+    }
+}
+// class Shape {
+//     constructor()
+// }
+
+ class ResizeHandler {
+    private handlerSize = 5;
+    constructor(public position: PolarCoordinate, private coords: Coords, private width: number, private height: number, private context: CanvasRenderingContext2D) {
+        this.createHandler();
+    }
+    private createHandler() {
+        this.context.fillStyle = '#ffffff';
+        this.context.strokeStyle = '#000000';
+
+        const NW = {
+            x: this.coords.x - this.handlerSize / 2,
+            y: this.coords.y - this.handlerSize / 2
+        }
+
+        const NE = {
+            x: this.coords.x + this.width - this.handlerSize / 2,
+            y: NW.y,
+        }
+
+        const SW = {
+            x: NW.x, 
+            y: this.coords.y + this.height - this.handlerSize / 2
+        }
+
+        const SE = {
+            x: NE.x,
+            y: SW.y
+        }
+
+        switch (this.position) {
+            
+            case 'NW':
+                this.context.fillRect(NW.x, NW.y, this.handlerSize, this.handlerSize);
+                this.context.strokeRect(NW.x, NW.y, this.handlerSize, this.handlerSize);
+                break;
+            case 'NE':
+                this.context.fillRect(NE.x, NE.y, this.handlerSize, this.handlerSize);
+                this.context.strokeRect(NE.x, NE.y, this.handlerSize, this.handlerSize);
+                break;
+            case 'SW':
+                this.context.fillRect(SW.x, SW.y, this.handlerSize, this.handlerSize);
+                this.context.strokeRect(SW.x, SW.y, this.handlerSize, this.handlerSize);
+                break;
+            case 'SE':
+                this.context.fillRect(SE.x, SE.y, this.handlerSize, this.handlerSize);
+                this.context.strokeRect(SE.x, SE.y, this.handlerSize, this.handlerSize);
+                break;
+        }
+    }
+    public mouseIsOver(): boolean {
+        return true;
+    }
+}
+
 </script>

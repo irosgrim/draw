@@ -12,6 +12,9 @@ button {
     &:active {
         outline: none;
     }
+    &:disabled {
+        opacity: 0.5;
+    }
 }
 
 #app {
@@ -23,6 +26,7 @@ button {
     position: absolute;
     top: 0;
     left: 0;
+    border: 1px solid black;
 }
 .toolbar-container {
     position: absolute;
