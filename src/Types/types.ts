@@ -1,5 +1,10 @@
 export type ShapeName = 'RECTANGLE' | 'CIRCLE';
 export type PolarCoordinate = 'NW' | 'NE' | 'SW' | 'SE' | 'N' | 'S' | 'W' | 'E';
+
+export interface ContextMenuProperties {
+    visible: boolean;
+    coords: Coords;
+}
 export interface DefaultMenu {
     label: string;
     icon: string;

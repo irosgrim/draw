@@ -5,26 +5,36 @@
         :selected-tool="selectedTool"
         :menu="defaultMenu"
     />
+    <PropertiesMenu />
+    <ContextMenu 
+        :contextMenu="contextMenu"
+        @close-context-menu="contextMenu.visible = false"
+    />
     <Canvas 
         :selectedTool="selectedTool"
         @select-tool="selectTool"
         @mouse-up="resetSelectedTool"
+        @context-menu="handleContextMenu($event)"
     />
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Prop, Vue } from "vue-property-decorator";
 import MainMenu from '@/components/mainMenu/MainMenu.vue';
 import Canvas from '@/components/canvas/Canvas.vue';
 import { Tool } from './store/toolbar/types';
-import { DefaultMenu, Dictionary } from './Types/types';
+import { ContextMenuProperties, Coords, DefaultMenu, Dictionary } from './Types/types';
+import ContextMenu from '@/components/contextMenu/ContextMenu.vue';
+import PropertiesMenu from '@/components/propertiesMenu/PropertiesMenu.vue';
 
 
 @Component({
     components: {
         Canvas,
-        MainMenu
+        MainMenu,
+        ContextMenu,
+        PropertiesMenu,
     }
 })
 export default class App extends Vue {
@@ -55,17 +65,29 @@ export default class App extends Vue {
         }
     };
     public selectedTool: Tool = 'SELECT';
+    public contextMenu: ContextMenuProperties= {
+        visible: false,
+        coords: {
+            x: 0,
+            y: 0,
+        }
+    }
 
-    public resetSelectedTool() {
+    public resetSelectedTool(): void {
         if(this.selectedTool !== 'PAN') {
             this.selectedTool = 'SELECT';
         }
     }
 
-    public selectTool(tool: Tool) {
+    public selectTool(tool: Tool): void {
         if(!this.defaultMenu[tool].disabled) {
             this.selectedTool = tool;
         }
+    }
+
+    public handleContextMenu(contextMenuEvent: {visible: boolean, mouseCoords: Coords}): void {
+        this.contextMenu.visible = contextMenuEvent.visible;
+        this.contextMenu.coords = contextMenuEvent.mouseCoords;
     }
 }
 </script>

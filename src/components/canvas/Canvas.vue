@@ -1,5 +1,5 @@
 <template>
-    <canvas id="canvas" ref="canvas"></canvas>
+    <canvas id="canvas" ref="canvas" tabindex="-1"></canvas>
 </template>
 
 <script lang="ts">
@@ -25,7 +25,10 @@ export default class Canvas extends Vue {
 
     private canvas: HTMLCanvasElement | null = null;
     private context: CanvasRenderingContext2D | null = null;
+    private redrawCanvas = false;
     private mouseIsDown = false;
+    private mouseIsDragging = false;
+    private selectedShapes = [];
     private offsetX = 0;
     private offsetY = 0;
     private startPoint = {
@@ -38,11 +41,11 @@ export default class Canvas extends Vue {
     }
 
     private shapes: Shape[] = [];
+    private resizeHandlers: ResizeHandler[] = [];
+
     public mounted(): void {
         this.setupCanvas();
         window.addEventListener('resize', this.onResize);
-        document.addEventListener("keydown", this.onKeyDown);
-        document.addEventListener("keyup", this.onKeyUp);
         this.draw();
     }
 
@@ -181,6 +184,8 @@ export default class Canvas extends Vue {
         this.canvas.onmousedown = this.mouseDown;
         this.canvas.onmouseup = this.mouseUp;
         this.canvas.oncontextmenu = this.showContextMenu;
+        this.canvas.addEventListener("keydown", this.onKeyDown);
+        this.canvas.addEventListener("keyup", this.onKeyUp);
     }
 
     public mouseDown(e: MouseEvent) {
@@ -231,7 +236,7 @@ export default class Canvas extends Vue {
             // @ts-ignore
             const s = new Shape(this.selectedTool, { coords: {start: {...this.startPoint}, end: {...this.endPoint}}, fill: 'pink'});
             this.shapes = [...this.shapes, s];
-            this.draw();
+            s.drawShape(this.context!);
         }
         this.$emit('mouse-up');
     }
@@ -323,6 +328,7 @@ export default class Canvas extends Vue {
     public showContextMenu(e: MouseEvent): void {
         e.preventDefault();
         console.log('context menu ', {clientX: e.clientX, clientY: e.clientY});
+        this.$emit('context-menu', {visible: true, mouseCoords: {x: e.clientX, y: e.clientY}});
     }
 }
 
