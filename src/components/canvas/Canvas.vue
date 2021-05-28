@@ -296,8 +296,8 @@ export default class Canvas extends Vue {
                 context.ellipse(
                     coords.x - ((coords.x - this.startPoint.x) / 2), 
                     coords.y - ((coords.y - this.startPoint.y) / 2), 
-                    (coords.x - this.startPoint.x) / 2, 
-                    (coords.y - this.startPoint.y) / 2, 
+                    Math.abs( (coords.x - this.startPoint.x) / 2), 
+                    Math.abs((coords.y - this.startPoint.y) / 2), 
                     0,
                     0,
                     2*Math.PI
@@ -340,10 +340,20 @@ class Shape {
     
     constructor(type: ShapeName, shapeProperties: {coords: ShapeCoords, stroke?: Stroke, fill?: string}) {
         this.id = uid(12);
-        this.x = shapeProperties.coords.start.x;
-        this.y = shapeProperties.coords.start.y;
-        this.width = shapeProperties.coords.end.x - shapeProperties.coords.start.x;
-        this.height = shapeProperties.coords.end.y - shapeProperties.coords.start.y;
+        if(shapeProperties.coords.end.x <= shapeProperties.coords.start.x) {
+            this.x = shapeProperties.coords.end.x;
+            this.width = Math.abs(shapeProperties.coords.start.x - shapeProperties.coords.end.x);
+        } else {
+            this.x = shapeProperties.coords.start.x;
+            this.width = Math.abs(shapeProperties.coords.end.x - shapeProperties.coords.start.x);
+        }
+        if(shapeProperties.coords.end.y <= shapeProperties.coords.start.y) {
+            this.y = shapeProperties.coords.end.y;
+            this.height = Math.abs(shapeProperties.coords.start.y - shapeProperties.coords.end.y);
+        } else {
+            this.y = shapeProperties.coords.start.y;
+            this.height = Math.abs(shapeProperties.coords.end.y - shapeProperties.coords.start.y);
+        }
         this.stroke = shapeProperties.stroke ? shapeProperties.stroke : null;
         this.fill = shapeProperties.fill ? shapeProperties.fill : '';
         this.type = type;
