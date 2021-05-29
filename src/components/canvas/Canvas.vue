@@ -79,7 +79,9 @@ export default class Canvas extends Vue {
 
     @Watch('getCanvas')
     private canvasChanged(newCanvas: Color) {
-        (this.$refs.canvas as HTMLCanvasElement).style.backgroundColor = newCanvas.color;
+        // (this.$refs.canvas as HTMLCanvasElement).style.backgroundColor = newCanvas.color;
+        this.clear();
+        this.draw();
     }
 
     @Watch('selectedTool')
@@ -371,7 +373,9 @@ export default class Canvas extends Vue {
 
     public clear(): void {
         const context = this.canvas?.getContext('2d');
-        context!.clearRect(0, 0, this.canvas!.width, this.canvas!.height);
+        // context!.clearRect(0, 0, this.canvas!.width, this.canvas!.height);
+        this.context!.fillStyle = this.getCanvas.color;
+        this.context!.fillRect(0, 0, this.canvas!.width, this.canvas!.height)
     }
 
     public showContextMenu(e: MouseEvent): void {
