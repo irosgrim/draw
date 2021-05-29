@@ -1,16 +1,16 @@
 <template>
     <ul class="properties-menu">
-        <li class="opacity-75" v-if="getCurrentShape">
+        <li class="opacity-75" v-if="getId">
             <div class="d-flex">
-                <div class="w-50">x: {{ getCurrentShape.x }}</div>
-                <div class="flex-grow-1">y: {{ getCurrentShape.y }}</div>
+                <div class="w-50">x: {{ getX }}</div>
+                <div class="flex-grow-1">y: {{ getY }}</div>
             </div>
             <div class="d-flex">
-                <div class="w-50">w: {{ getCurrentShape.width }}</div>
-                <div class="flex-grow-1">h: {{ getCurrentShape.height }}</div>
+                <div class="w-50">w: {{ getWidth }}</div>
+                <div class="flex-grow-1">h: {{ getHeight }}</div>
             </div>
         </li>
-        <li v-if="getCurrentShape">
+        <li v-if="getId">
             <div class="property">
                 <div class="bold">Stroke</div>
                 <div>
@@ -28,7 +28,7 @@
                 />
             </div>
         </li>
-        <li v-if="getCurrentShape">
+        <li v-if="getId">
             <div class="property">
                 <div class="bold">Fill</div>
                 <div>
@@ -78,12 +78,10 @@ import { Vue, Component } from 'vue-property-decorator';
 import ColorPicker from '@/components/colorPicker/ColorPicker.vue';
 import {
   State,
-  Getter,
   namespace
 } from 'vuex-class'
 import { Properties, Stroke } from '@/Types/types';
 import { Color, PropertiesStore } from '@/store/properties/types';
-import { Shape } from '../canvas/canvas';
 
 const properties = namespace('properties');
 
@@ -94,7 +92,11 @@ const properties = namespace('properties');
 })
 export default class PropertiesMenu extends Vue {
     @State('properties') public properties!: PropertiesStore;
-    @properties.Getter('getCurrentShape') public getCurrentShape!: Shape;
+    @properties.Getter('getId') public getId!: number;
+    @properties.Getter('getX') public getX!: number;
+    @properties.Getter('getY') public getY!: number;
+    @properties.Getter('getWidth') public getWidth!: number;
+    @properties.Getter('getHeight') public getHeight!: number;
     @properties.Getter('getStroke') public getStroke!: Stroke;
     @properties.Getter('getFill') public getFill!: Color;
     @properties.Getter('getCanvas') public getCanvas!: Color;

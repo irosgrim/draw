@@ -1,5 +1,5 @@
 import { Shape } from '@/components/canvas/canvas';
-import { Coords, Stroke } from '@/Types/types';
+import { Coords, Dictionary, Stroke } from '@/Types/types';
 import { Module } from 'vuex';
 import { GetterTree } from 'vuex';
 import { ActionTree } from 'vuex';
@@ -9,8 +9,27 @@ import { Color, PropertiesStore } from './types';
 
 const namespaced = true;
 
+const defaultProperties = {
+    id: '',
+    x: 0,
+    y: 0,
+    stroke: null,
+    fill: {
+        color: '#ffc0cb',
+        opacity: 100
+    },
+    canvas: {
+        color: '#ffffff',
+        opacity: 100
+    }
+}
+
 export const propertiesStore: PropertiesStore = {
-    selectedShape: null,
+    id: '',
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
     stroke: null,
     fill: {
         color: '#ffc0cb',
@@ -23,14 +42,26 @@ export const propertiesStore: PropertiesStore = {
 };
 
 export const getters: GetterTree<PropertiesStore, RootState> = {
-    getCurrentShape(state): Shape | null{
-        return state.selectedShape;
+    getId(state) {
+        return state.id;
+    },
+    getX(state) {
+        return state.x;
+    },
+    getY(state) {
+        return state.y;
+    },
+    getWidth(state) {
+        return state.width;
+    },
+    getHeight(state) {
+        return state.height;
     },
     getStroke(state) {
         return state.stroke;
     },
     getFill(state) {
-        return state.fill ;
+        return state.fill;
     },
     getCanvas(state) {
         return state.canvas;
@@ -38,23 +69,16 @@ export const getters: GetterTree<PropertiesStore, RootState> = {
 };
 
 export const mutations: MutationTree<PropertiesStore> = {
-    setCurrentShape(state, shape: Shape | null) {
-        state.selectedShape = shape;
+    setCurrentShape(state, shapeProperties: {id:string, x: number, y: number, width: number, height: number, fill: Color, stroke: Stroke | null}) {
+        state.id = shapeProperties.id;
+        state.x = shapeProperties.x;
+        state.y = shapeProperties.y;
+        state.width = shapeProperties.width;
+        state.height = shapeProperties.height;
+        state.fill = { color: shapeProperties.fill.color, opacity: shapeProperties.fill.opacity ? shapeProperties.fill.opacity : 100};
+        state.stroke = shapeProperties.stroke;
     },
-    resetProperties(state, shape: Shape | null) {
-        state.fill = {
-            color: '#ffc0cb',
-            opacity: 100
-        }
-        state.stroke = null;
-    },
-    setCurrentShapePosition(state, coords: Coords) {
-        if(state.selectedShape) {
-            state.selectedShape.x = coords.x;
-            state.selectedShape.y = coords.y;
-        }
-    },
-    setStroke(state, stroke: Stroke) {
+    setStroke(state, stroke: Stroke | null) {
         state.stroke = stroke;
     },
     setFill(state, color: Color) {
@@ -63,15 +87,21 @@ export const mutations: MutationTree<PropertiesStore> = {
     setCanvas(state, color: Color) {
         state.canvas = color;
     },
+    resetProperties(state) {
+        state.id = defaultProperties.id;
+        state.x = defaultProperties.x;
+        state.y = defaultProperties.y;
+        state.fill = defaultProperties.fill;
+        state.stroke = defaultProperties.stroke;
+    }
 };
 
 export const actions: ActionTree<PropertiesStore, RootState> = {
     async setSomething({ commit }, payload) {
         await commit('setSomething', payload);
     },
-    setCurrentShape({ commit }, shape: Shape | null) {
-        commit('setCurrentShape', shape);
-        commit('resetProperties');
+    async setCurrentShape({ commit }, shapeProperties: {id:string, x: number, y: number, fill: Color, stroke: Stroke | null}) {
+        await commit('setCurrentShape', shapeProperties);
     },
 };
 

@@ -15,20 +15,24 @@ export class Shape {
     
     constructor(type: ShapeName, shapeProperties: {coords: ShapeCoords, stroke?: Stroke, fill?: string}) {
         this.id = uid(12);
-        if(shapeProperties.coords.end.x <= shapeProperties.coords.start.x) {
+        const isNegativeWidth = shapeProperties.coords.end.x <= shapeProperties.coords.start.x;
+        const isNegativeHeight = shapeProperties.coords.end.y <= shapeProperties.coords.start.y;
+
+        if(isNegativeWidth) {
             this.x = shapeProperties.coords.end.x;
             this.width = Math.abs(shapeProperties.coords.start.x - shapeProperties.coords.end.x);
         } else {
             this.x = shapeProperties.coords.start.x;
             this.width = Math.abs(shapeProperties.coords.end.x - shapeProperties.coords.start.x);
         }
-        if(shapeProperties.coords.end.y <= shapeProperties.coords.start.y) {
+        if(isNegativeHeight) {
             this.y = shapeProperties.coords.end.y;
             this.height = Math.abs(shapeProperties.coords.start.y - shapeProperties.coords.end.y);
         } else {
             this.y = shapeProperties.coords.start.y;
             this.height = Math.abs(shapeProperties.coords.end.y - shapeProperties.coords.start.y);
         }
+
         this.stroke = shapeProperties.stroke ? shapeProperties.stroke : null;
         this.fill = shapeProperties.fill ? shapeProperties.fill : '';
         this.type = type;
@@ -92,6 +96,10 @@ export class Shape {
         }
 
         if(this.isSelected) {
+            context.setLineDash([]);
+            context.lineWidth = 1;
+            context.strokeStyle = '#00a7f9';
+            context.strokeRect(this.x, this.y, this.width, this.height);
             this.drawPolarCoordinates(context);
         }
         context.closePath();
@@ -138,8 +146,8 @@ export class Mouse {
         const canvasBounding = this.canvas.getBoundingClientRect();
         this.offsetX = canvasBounding.left;
         this.offsetY = canvasBounding.top;
-        this.mouseX = e.clientX - this.offsetX;
-        this.mouseY = e.clientY - this.offsetY;
+        this.mouseX  = e.clientX - this.offsetX;
+        this.mouseY  = e.clientY - this.offsetY;
     }
     public get mousePosition(): Coords {
         return {
@@ -199,6 +207,6 @@ export class ResizeHandler {
         }
     }
     public mouseIsOver(): boolean {
-        return true;
+        return false;
     }
 }
