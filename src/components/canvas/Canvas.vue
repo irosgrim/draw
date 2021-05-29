@@ -298,6 +298,7 @@ export default class Canvas extends Vue {
                         if(!modifier.shift && !modifier.ctrl) {
                             shape.x += 10;
                         }
+                        this.$store.commit('properties/setX', shape.x);
                     }
                 }
                 break;
@@ -314,6 +315,7 @@ export default class Canvas extends Vue {
                         if(!modifier.shift && !modifier.ctrl) {
                             shape.x -= 10;
                         }
+                        this.$store.commit('properties/setX', shape.x);
                     }
                 }
                 break;
@@ -330,6 +332,7 @@ export default class Canvas extends Vue {
                         if(!modifier.shift && !modifier.ctrl) {
                             shape.y -= 10;
                         }
+                        this.$store.commit('properties/setY', shape.y);
                     }
                 }
                 break;
@@ -347,6 +350,7 @@ export default class Canvas extends Vue {
                             shape.y += 10;
                         }
                     }
+                    this.$store.commit('properties/setY', shape.y);
                 }
                 break;
         }

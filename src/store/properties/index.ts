@@ -93,6 +93,12 @@ export const mutations: MutationTree<PropertiesStore> = {
         state.y = defaultProperties.y;
         state.fill = defaultProperties.fill;
         state.stroke = defaultProperties.stroke;
+    },
+    setX(state, x: number) {
+        state.x = x;
+    },
+    setY(state, y: number) {
+        state.y = y;
     }
 };
 
