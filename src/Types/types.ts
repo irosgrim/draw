@@ -1,3 +1,4 @@
+export type Properties = 'STROKE' | 'FILL' | 'CANVAS';
 export type ShapeName = 'RECTANGLE' | 'CIRCLE';
 export type PolarCoordinate = 'NW' | 'NE' | 'SW' | 'SE' | 'N' | 'S' | 'W' | 'E';
 

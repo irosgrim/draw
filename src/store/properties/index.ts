@@ -1,36 +1,77 @@
+import { Shape } from '@/components/canvas/canvas';
+import { Coords, Stroke } from '@/Types/types';
 import { Module } from 'vuex';
 import { GetterTree } from 'vuex';
 import { ActionTree } from 'vuex';
 import { MutationTree } from 'vuex';
 import { RootState } from '../types';
-import { PropertiesStore } from './types';
+import { Color, PropertiesStore } from './types';
 
 const namespaced = true;
 
 export const propertiesStore: PropertiesStore = {
-    background: '#ffffff',
+    selectedShape: null,
     stroke: null,
-    fill: 'pink',
-    borderRadius: null,
-    something: '',
+    fill: {
+        color: '#ffc0cb',
+        opacity: 100
+    },
+    canvas: {
+        color: '#ffffff',
+        opacity: 100
+    },
 };
 
 export const getters: GetterTree<PropertiesStore, RootState> = {
-    getSomething(state) {
-        return 'something';
+    getCurrentShape(state): Shape | null{
+        return state.selectedShape;
     },
-
+    getStroke(state) {
+        return state.stroke;
+    },
+    getFill(state) {
+        return state.fill ;
+    },
+    getCanvas(state) {
+        return state.canvas;
+    },
 };
 
 export const mutations: MutationTree<PropertiesStore> = {
-    setSomething(state, something: string) {
-        state.something = something;
+    setCurrentShape(state, shape: Shape | null) {
+        state.selectedShape = shape;
+    },
+    resetProperties(state, shape: Shape | null) {
+        state.fill = {
+            color: '#ffc0cb',
+            opacity: 100
+        }
+        state.stroke = null;
+    },
+    setCurrentShapePosition(state, coords: Coords) {
+        if(state.selectedShape) {
+            state.selectedShape.x = coords.x;
+            state.selectedShape.y = coords.y;
+        }
+    },
+    setStroke(state, stroke: Stroke) {
+        state.stroke = stroke;
+    },
+    setFill(state, color: Color) {
+        state.fill = color;
+    },
+    setCanvas(state, color: Color) {
+        state.canvas = color;
     },
 };
 
 export const actions: ActionTree<PropertiesStore, RootState> = {
     async setSomething({ commit }, payload) {
         await commit('setSomething', payload);
+    },
+    setCurrentShape({ commit }, shape: Shape | null) {
+        commit('setCurrentShape', shape);
+        commit('resetProperties');
     },
 };
 

@@ -5,13 +5,16 @@
         :selected-tool="selectedTool"
         :menu="defaultMenu"
     />
-    <PropertiesMenu />
+    <PropertiesMenu
+        @export-png="exportPNG"
+    />
     <ContextMenu 
         :contextMenu="contextMenu"
         @close-context-menu="contextMenu.visible = false"
     />
     <Canvas 
         :selectedTool="selectedTool"
+        :saveCanvas="saveCanvas"
         @select-tool="selectTool"
         @mouse-up="resetSelectedTool"
         @context-menu="handleContextMenu($event)"
@@ -64,6 +67,7 @@ export default class App extends Vue {
             disabled: true
         }
     };
+    public saveCanvas = false;
     public selectedTool: Tool = 'SELECT';
     public contextMenu: ContextMenuProperties= {
         visible: false,
@@ -88,6 +92,10 @@ export default class App extends Vue {
     public handleContextMenu(contextMenuEvent: {visible: boolean, mouseCoords: Coords}): void {
         this.contextMenu.visible = contextMenuEvent.visible;
         this.contextMenu.coords = contextMenuEvent.mouseCoords;
+    }
+
+    public exportPNG() {
+        this.saveCanvas = true;
     }
 }
 </script>

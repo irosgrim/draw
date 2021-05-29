@@ -1,8 +1,13 @@
+import { Shape } from '@/components/canvas/canvas';
+import { Stroke } from '@/Types/types';
 
+export interface Color {
+    color: string;
+    opacity: number;
+}
 export interface PropertiesStore {
-    background: string;
-    stroke: string | null;
-    fill: string | null;
-    borderRadius: number | null;
-    something: string;
+    selectedShape: Shape | null;
+    stroke: Stroke | null;
+    fill: Color | null;
+    canvas: Color;
 }

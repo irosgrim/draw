@@ -1,45 +1,36 @@
 <template>
     <div class="colors">
-        <input type="color" :value="pickedColor" class="color-picker" @change="pickedColor = $event.target.value">
-        <input type="text" v-model="pickedColor" class="color-code">
-        <input type="text" v-model="opacity" class="color-opacity" @keyup.enter="validate" @blur="validate()">
+        <input type="color" :value="color" class="color-picker" @change="$emit('color-changed', $event.target.value)">
+        <input type="text" :value="color" class="color-code" @input="$emit('color-changed', $event.target.value)">
+        <input type="text" :value="formattedOpacity" @input="formattedOpacity = $event.target.value" class="color-opacity" @keyup.enter="validateOpacity" @blur="validateOpacity">
     </div>
 </template>
 
 <script lang="ts">
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
+import { isNumber } from '@/helpers/string';
 
 @Component
 export default class ColorPicker extends Vue {
-    public pickedColor = '#ffc0cb';
-    private o = '42';
-    
-    get opacity() {
-        return this.o + '%';
+    @Prop() public color!: string;
+    @Prop() public opacity!: string;
+
+    get formattedOpacity() {
+        return this.opacity + '%';
     }
-    set opacity(value: string) {
+    set formattedOpacity(value: string) {
         const newOpacity = value.replace(/%/, '');
-        this.o = newOpacity;
+        this.$emit('opacity-changed', newOpacity);
     }
 
-    public validate() {
-        const newOpacity = this.opacity.replace(/%/, '')
-        const isNumber = this.isNumber(newOpacity);
-        console.log(isNumber);
-        if(!this.o || !isNumber) {
-            this.opacity = '100';
+    public validateOpacity() {
+        const newOpacity = this.formattedOpacity.replace(/%/, '')
+        if(!this.formattedOpacity || !isNumber) {
+            this.formattedOpacity = '100';
         }
-        if(isNumber && parseInt(newOpacity, 10) > 100 ||parseInt(newOpacity, 10) < 0) {
-            this.opacity = '100';
+        if(isNumber(newOpacity) && parseInt(newOpacity, 10) > 100 ||parseInt(newOpacity, 10) < 0) {
+            this.formattedOpacity = '100';
         }
-    }
-
-    private isNumber(str: number | string) {
-        if (typeof str !== "string") {
-            return false;
-        }
-        const n = str as unknown as number;
-        return !isNaN(n) && !isNaN(parseFloat(str));
     }
 }
 </script>
