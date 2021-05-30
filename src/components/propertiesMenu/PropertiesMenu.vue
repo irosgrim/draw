@@ -22,9 +22,7 @@
             <div class="property-container" v-if="stroke.showProperties">
                 <ColorPicker 
                     :color="getStroke ? getStroke.style : stroke.color"
-                    :opacity="stroke.opacity"
                     @color-changed="handleColorChanged($event, 'STROKE')"
-                    @opacity-changed="handleOpacityChanged($event, 'STROKE')"
                 />
             </div>
         </li>
@@ -39,10 +37,8 @@
             </div>
             <div class="property-container" v-if="fill.showProperties">
                 <ColorPicker
-                    :color="getFill.color"
-                    :opacity="getFill.opacity"
+                    :color="getFill"
                     @color-changed="handleColorChanged($event, 'FILL')"
-                    @opacity-changed="handleOpacityChanged($event, 'FILL')"
                 />
 
             </div>
@@ -53,10 +49,8 @@
             </div>
             <div class="property-container">
                 <ColorPicker 
-                    :color="getCanvas.color"
-                    :opacity="getCanvas.opacity"
+                    :color="getCanvas"
                     @color-changed="handleColorChanged($event, 'CANVAS')"
-                    @opacity-changed="handleOpacityChanged($event, 'CANVAS')"
                 />
             </div>
         </li>
@@ -81,7 +75,7 @@ import {
   namespace
 } from 'vuex-class'
 import { Properties, Stroke } from '@/Types/types';
-import { Color, PropertiesStore } from '@/store/properties/types';
+import { PropertiesStore } from '@/store/properties/types';
 
 const properties = namespace('properties');
 
@@ -98,23 +92,20 @@ export default class PropertiesMenu extends Vue {
     @properties.Getter('getWidth') public getWidth!: number;
     @properties.Getter('getHeight') public getHeight!: number;
     @properties.Getter('getStroke') public getStroke!: Stroke;
-    @properties.Getter('getFill') public getFill!: Color;
-    @properties.Getter('getCanvas') public getCanvas!: Color;
+    @properties.Getter('getFill') public getFill!: string;
+    @properties.Getter('getCanvas') public getCanvas!: string;
 
     public stroke = {
         showProperties: false,
-        color: '#ffc0cb',
-        opacity: '32'
+        color: 'rgba(255, 192, 203, 1)',
     }
     public fill = {
         showProperties: false,
-        color: '#ffc0cb',
-        opacity: '59'
+        color: 'rgba(255, 192, 203, 1)',
     }
     public canvas = {
         showProperties: true,
-        color: '#ffffff',
-        opacity: '56'
+        color: 'rgba(255, 255, 255, 1)',
     }
 
     public toggleStroke() {
@@ -125,7 +116,7 @@ export default class PropertiesMenu extends Vue {
         this.fill.showProperties = !this.fill.showProperties;
     }
 
-    public handleColorChanged(color: Properties, property: string) {
+    public handleColorChanged(color: string, property: Properties) {
         switch(property) {
             case 'STROKE':
                 this.stroke.color = color;
@@ -133,29 +124,11 @@ export default class PropertiesMenu extends Vue {
                 break;
             case 'FILL':
                 this.fill.color = color;
-                this.$store.commit('properties/setFill', {color: color, opacity: this.fill.opacity})
+                this.$store.commit('properties/setFill', color)
                 break;
             case 'CANVAS':
                 this.canvas.color = color;
-                this.$store.commit('properties/setCanvas', {color: color, opacity: this.canvas.opacity})
-                break
-        }
-    }
-
-    public handleOpacityChanged(opacity: Properties, property: string) {
-        console.log(opacity);
-        switch(property) {
-            case 'STROKE':
-                this.stroke.opacity = opacity;
-                this.$store.commit('properties/setStroke', {style: this.stroke.color, width: 1})
-                break;
-            case 'FILL':
-                this.fill.opacity = opacity;
-                this.$store.commit('properties/setFill', {color: this.fill.color, opacity: opacity})
-                break;
-            case 'CANVAS':
-                this.canvas.opacity = opacity;
-                this.$store.commit('properties/setCanvas', {color: this.canvas.color, opacity: opacity})
+                this.$store.commit('properties/setCanvas', color)
                 break
         }
     }

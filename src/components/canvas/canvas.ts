@@ -96,20 +96,9 @@ export class Shape {
         }
 
         if(this.isSelected) {
-            context.setLineDash([]);
-            context.lineWidth = 1;
-            context.strokeStyle = '#00a7f9';
-            context.strokeRect(this.x, this.y, this.width, this.height);
-            this.drawPolarCoordinates(context);
+            this.drawResizeHandlers(context);
         }
         context.closePath();
-    }
-    private drawPolarCoordinates(context: CanvasRenderingContext2D) {
-        context.setLineDash([]);
-        context.lineWidth = 1;
-        context.strokeStyle = '#00a7f9';
-        context.strokeRect(this.x, this.y, this.width, this.height);
-        (["NW", "NE", "SW", "SE"] as PolarCoordinate[]).forEach(x => new ResizeHandler(x, {x: this.x, y: this.y}, this.width, this.height, context));
     }
 
     private drawRectangle(context: CanvasRenderingContext2D) {
@@ -124,12 +113,28 @@ export class Shape {
             context.strokeRect(this.x, this.y, this.width, this.height);
         }
         if(this.isSelected) {
+            this.drawResizeHandlers(context);
+        }
+    }
+
+    private drawResizeHandlers(context: CanvasRenderingContext2D) {
+            (["NW", "NE", "SW", "SE"] as PolarCoordinate[]).forEach(x => new ResizeHandler(x, {x: this.x, y: this.y}, this.width, this.height, context));
             context.setLineDash([]);
             context.lineWidth = 1;
             context.strokeStyle = '#00a7f9';
+
             context.strokeRect(this.x, this.y, this.width, this.height);
-            (["NW", "NE", "SW", "SE"] as PolarCoordinate[]).forEach(x => new ResizeHandler(x, {x: this.x, y: this.y}, this.width, this.height, context));
-        }
+            context.fillStyle = 'rgba(0, 166, 249, 0.685)';
+
+            const text = `${this.width} x ${this.height}`;
+            const infoBoxH = 16;
+            const textWidth = context.measureText(text).width;
+            const infoBoxW = textWidth + 8;
+            context.fillRect(this.x + this.width / 2 - infoBoxW / 2, this.y + this.height + 16 - infoBoxH / 2, infoBoxW, infoBoxH);
+            context.fillStyle = "#ffffff";
+            context.textAlign = "center";
+            context.font = "bold 12px Avenir";
+            context.fillText(text, this.x + this.width / 2, this.y + this.height + 16 + infoBoxH / 3.6);
     }
 
 }

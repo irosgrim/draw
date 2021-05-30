@@ -11,6 +11,6 @@ export interface PropertiesStore {
     width: number;
     height: number;
     stroke: Stroke | null;
-    fill: Color | null;
-    canvas: Color;
+    fill: string;
+    canvas: string;
 }

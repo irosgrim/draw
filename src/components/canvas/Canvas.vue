@@ -25,8 +25,8 @@ export default class Canvas extends Vue {
     @State('properties') private properties!: PropertiesStore;
     @State('toolbar') private toolbar!: ToolbarStore;
     @properties.Getter('getStroke') public getStroke!: Stroke;
-    @properties.Getter('getFill') public getFill!: Color;
-    @properties.Getter('getCanvas') public getCanvas!: Color;
+    @properties.Getter('getFill') public getFill!: string;
+    @properties.Getter('getCanvas') public getCanvas!: string;
 
     private canvas: HTMLCanvasElement | null = null;
     private context: CanvasRenderingContext2D | null = null;
@@ -56,11 +56,11 @@ export default class Canvas extends Vue {
     }
 
     @Watch('getFill')
-    private fillChanged(newFill: Color) {
+    private fillChanged(newFill: string) {
         for(const id in this.shapes) {
             const shape = this.shapes[id];
             if(shape.isSelected) {
-                shape.fill = newFill.color;
+                shape.fill = newFill;
                 shape.drawShape(this.context!);
             }
         }
@@ -137,10 +137,7 @@ export default class Canvas extends Vue {
                         y: shape.y,
                         width: shape.width,
                         height: shape.height,
-                        fill: { 
-                            color: shape.fill, 
-                            opacity: 100
-                        }, 
+                        fill: shape.fill, 
                         stroke: shape.stroke
                     };
                     this.$store.dispatch('properties/setCurrentShape', shapeProps);
@@ -174,7 +171,18 @@ export default class Canvas extends Vue {
                 if(!shape.mouseIsOver(e, this.offsetX, this.offsetY)) {
                     shape.isSelected = false;
                     // this.$store.commit('properties/resetProperties');
+                    return;
                 }
+                const shapeProps = {
+                        id: shape.id, 
+                        x: shape.x, 
+                        y: shape.y,
+                        width: shape.width,
+                        height: shape.height,
+                        fill: shape.fill, 
+                        stroke: shape.stroke
+                    };
+                    this.$store.dispatch('properties/setCurrentShape', shapeProps);
             }
             return;
         }
@@ -185,7 +193,7 @@ export default class Canvas extends Vue {
             const fill = this.getFill;
             const stroke = this.getStroke;
             // @ts-ignore
-            const s = new Shape(this.selectedTool, { coords: {start: {...this.startPoint}, end: {...this.endPoint}}, fill: fill.color, stroke });
+            const s = new Shape(this.selectedTool, { coords: {start: {...this.startPoint}, end: {...this.endPoint}}, fill: fill, stroke });
             this.$set(this.shapes, s.id, s);
             // s.drawShape(this.context!);
             this.draw();
@@ -215,13 +223,10 @@ export default class Canvas extends Vue {
                             y: shape.y,
                             width: shape.width,
                             height: shape.height,
-                            fill: { 
-                                color: shape.fill, 
-                                opacity: 100
-                            }, 
+                            fill: shape.fill, 
                             stroke: shape.stroke
                         };
-                        this.$store.dispatch('properties/setCurrentShape', shapeProps);
+                        // this.$store.dispatch('properties/setCurrentShape', shapeProps);
                         shape.x += dx;
                         shape.y += dy;
                     }
@@ -423,7 +428,7 @@ export default class Canvas extends Vue {
 
     public clear(): void {
         const context = this.canvas?.getContext('2d');
-        this.context!.fillStyle = this.getCanvas.color;
+        this.context!.fillStyle = this.getCanvas;
         this.context!.fillRect(0, 0, this.canvas!.width, this.canvas!.height)
     }
 
