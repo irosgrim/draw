@@ -73,7 +73,6 @@ export const mutations: MutationTree<PropertiesStore> = {
         state.fill = color;
     },
     setCanvas(state, color: string) {
-        console.log(color);
         state.canvas = color;
     },
     resetProperties(state) {
