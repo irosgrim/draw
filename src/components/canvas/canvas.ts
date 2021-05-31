@@ -1,3 +1,4 @@
+import { mouseIsInsideEllipse, mouseIsInsideRectangle } from '@/helpers/geometry';
 import { Coords, PolarCoordinate, ShapeCoords, ShapeName, Stroke } from '@/Types/types';
 import { uid } from 'uid';
 
@@ -40,15 +41,11 @@ export class Shape {
     public mouseIsOver(e: MouseEvent, offsetX: number, offsetY: number) {
         const mouseX = e.clientX - offsetX;
         const mouseY = e.clientY - offsetY;
-        if (
-            mouseX > this.x &&
-            mouseX < this.x + this.width &&
-            mouseY > this.y &&
-            mouseY < this.y + this.height
-        ) {
-            return true;
-        } else {
-            return false;
+        if(this.type === 'CIRCLE') {
+            return mouseIsInsideEllipse(e.clientX, e.clientY, offsetX, offsetY, this.x, this.y, this.height, this.width);
+        }
+        if(this.type === 'RECTANGLE') {
+            return mouseIsInsideRectangle(e.clientX, e.clientY, offsetX, offsetY, this.x, this.y, this.height, this.width);
         }
     }
 
@@ -129,11 +126,11 @@ export class Shape {
             const text = `${this.width} x ${this.height}`;
             const infoBoxH = 16;
             const textWidth = context.measureText(text).width;
-            const infoBoxW = textWidth + 8;
+            const infoBoxW = textWidth + 16;
             context.fillRect(this.x + this.width / 2 - infoBoxW / 2, this.y + this.height + 16 - infoBoxH / 2, infoBoxW, infoBoxH);
             context.fillStyle = "#ffffff";
             context.textAlign = "center";
-            context.font = "bold 12px Avenir";
+            context.font = "12px Arial";
             context.fillText(text, this.x + this.width / 2, this.y + this.height + 16 + infoBoxH / 3.6);
     }
 
