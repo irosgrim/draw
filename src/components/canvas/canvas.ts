@@ -14,24 +14,32 @@ export class Shape {
     public _isMoving = false;
     public _isSelected = false;
     
-    constructor(type: ShapeName, shapeProperties: {coords: ShapeCoords, stroke?: Stroke, fill?: string}) {
+    constructor(type: ShapeName, shapeProperties: {coords?: ShapeCoords, stroke?: Stroke, fill?: string}, copyShape?: {x: number, y: number, h: number, w: number}) {
         this.id = uid(12);
-        const isNegativeWidth = shapeProperties.coords.end.x <= shapeProperties.coords.start.x;
-        const isNegativeHeight = shapeProperties.coords.end.y <= shapeProperties.coords.start.y;
+        if(shapeProperties.coords) {
+            const isNegativeWidth = shapeProperties.coords.end.x <= shapeProperties.coords.start.x;
+            const isNegativeHeight = shapeProperties.coords.end.y <= shapeProperties.coords.start.y;
 
-        if(isNegativeWidth) {
-            this.x = shapeProperties.coords.end.x;
-            this.width = Math.abs(shapeProperties.coords.start.x - shapeProperties.coords.end.x);
-        } else {
-            this.x = shapeProperties.coords.start.x;
-            this.width = Math.abs(shapeProperties.coords.end.x - shapeProperties.coords.start.x);
+            if(isNegativeWidth) {
+                this.x = shapeProperties.coords.end.x;
+                this.width = Math.abs(shapeProperties.coords.start.x - shapeProperties.coords.end.x);
+            } else {
+                this.x = shapeProperties.coords.start.x;
+                this.width = Math.abs(shapeProperties.coords.end.x - shapeProperties.coords.start.x);
+            }
+            if(isNegativeHeight) {
+                this.y = shapeProperties.coords.end.y;
+                this.height = Math.abs(shapeProperties.coords.start.y - shapeProperties.coords.end.y);
+            } else {
+                this.y = shapeProperties.coords.start.y;
+                this.height = Math.abs(shapeProperties.coords.end.y - shapeProperties.coords.start.y);
+            }
         }
-        if(isNegativeHeight) {
-            this.y = shapeProperties.coords.end.y;
-            this.height = Math.abs(shapeProperties.coords.start.y - shapeProperties.coords.end.y);
-        } else {
-            this.y = shapeProperties.coords.start.y;
-            this.height = Math.abs(shapeProperties.coords.end.y - shapeProperties.coords.start.y);
+        if(copyShape) {
+            this.x = copyShape.x;
+            this.y = copyShape.y;
+            this.width = copyShape.w;
+            this.height = copyShape.h;
         }
 
         this.stroke = shapeProperties.stroke ? shapeProperties.stroke : null;
@@ -42,9 +50,18 @@ export class Shape {
         const mouseX = e.clientX - offsetX;
         const mouseY = e.clientY - offsetY;
         if(this.type === 'CIRCLE') {
+           
             return mouseIsInsideEllipse(e.clientX, e.clientY, offsetX, offsetY, this.x, this.y, this.height, this.width);
         }
         if(this.type === 'RECTANGLE') {
+            const checkIfMouseOverNEHandle = () => {
+                return (
+                    mouseX < this.x + this.width + 10 && mouseX > this.x + this.width - 10 &&
+                    mouseY > this.y - 10 && mouseY < this.y + 10 
+                )
+            }
+
+            // console.log(checkIfMouseOverNEHandle());
             return mouseIsInsideRectangle(e.clientX, e.clientY, offsetX, offsetY, this.x, this.y, this.height, this.width);
         }
     }
@@ -77,7 +94,7 @@ export class Shape {
 
         }
     }
-    private drawCircle(context: CanvasRenderingContext2D) {
+    public drawCircle(context: CanvasRenderingContext2D) {
         context.beginPath();
         if(this.fill) {
             context.fillStyle = this.fill;
@@ -98,7 +115,7 @@ export class Shape {
         context.closePath();
     }
 
-    private drawRectangle(context: CanvasRenderingContext2D) {
+    public drawRectangle(context: CanvasRenderingContext2D) {
         if(this.fill) {
             context.fillStyle = this.fill;
             context.fillRect(this.x, this.y, this.width, this.height);
@@ -115,18 +132,19 @@ export class Shape {
     }
 
     private drawResizeHandlers(context: CanvasRenderingContext2D) {
-            (["NW", "NE", "SW", "SE"] as PolarCoordinate[]).forEach(x => new ResizeHandler(x, {x: this.x, y: this.y}, this.width, this.height, context));
             context.setLineDash([]);
             context.lineWidth = 1;
             context.strokeStyle = '#00a7f9';
-
             context.strokeRect(this.x, this.y, this.width, this.height);
-            context.fillStyle = 'rgba(0, 166, 249, 0.685)';
+
+            (["NW", "NE", "SW", "SE"] as PolarCoordinate[]).forEach(x => new ResizeHandler(x, {x: this.x, y: this.y}, this.width, this.height, context));
 
             const text = `${this.width} x ${this.height}`;
             const infoBoxH = 16;
             const textWidth = context.measureText(text).width;
             const infoBoxW = textWidth + 16;
+            context.fillStyle = 'rgba(0, 166, 249, 0.7)';
+
             context.fillRect(this.x + this.width / 2 - infoBoxW / 2, this.y + this.height + 16 - infoBoxH / 2, infoBoxW, infoBoxH);
             context.fillStyle = "#ffffff";
             context.textAlign = "center";

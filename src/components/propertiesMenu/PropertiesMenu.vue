@@ -1,29 +1,53 @@
 <template>
     <ul class="properties-menu">
         <li class="opacity-75" v-if="getId">
-            <div class="d-flex">
-                <div class="w-50">x: {{ getX }}</div>
-                <div class="flex-grow-1">y: {{ getY }}</div>
-            </div>
-            <div class="d-flex">
-                <div class="w-50">w: {{ getWidth }}</div>
-                <div class="flex-grow-1">h: {{ getHeight }}</div>
-            </div>
-        </li>
-        <li v-if="getId">
-            <div class="property">
-                <div class="bold">Stroke</div>
-                <div>
-                    <button type="button" @click="toggleStroke" class="property-toggle-btn">
-                        {{ stroke.showProperties ? '-' : '+'}}
-                    </button>
+            <div class="d-flex mb-3">
+                <div class="d-flex align-items-center">
+                    <label for="X">X:</label>
+                    <input
+                        class="property-input"
+                        :value="getX" 
+                        type="number" 
+                        name="X" 
+                        id="X"
+                        @keyup.enter="updateProperty('X', $event.target.value)"
+                    >
+                </div>
+                <div class="d-flex align-items-center">
+                    <label for="Y">Y:</label>
+                    <input 
+                        class="property-input"
+                        :value="getY" 
+                        type="number" 
+                        name="Y" 
+                        id="Y"
+                        @keyup.enter="updateProperty('Y', $event.target.value)"
+                    >
                 </div>
             </div>
-            <div class="property-container" v-if="stroke.showProperties">
-                <ColorPicker 
-                    :color="getStroke ? getStroke.style : stroke.color"
-                    @color-changed="handleColorChanged($event, 'STROKE')"
-                />
+            <div class="d-flex">
+                <div class="d-flex align-items-center">
+                    <label for="width">W:</label>
+                    <input 
+                        class="property-input"
+                        :value="getWidth" 
+                        type="number" 
+                        name="width" 
+                        id="width"
+                        @keyup.enter="updateProperty('WIDTH', $event.target.value)"
+                    >
+                </div>
+                <div class="d-flex align-items-center">
+                    <label for="height">H:</label>
+                    <input 
+                        class="property-input"
+                        :value="getHeight" 
+                        type="number" 
+                        name="height" 
+                        id="height"
+                        @keyup.enter="updateProperty('HEIGHT', $event.target.value)"
+                    >
+                </div>
             </div>
         </li>
         <li v-if="getId">
@@ -41,6 +65,22 @@
                     @color-changed="handleColorChanged($event, 'FILL')"
                 />
 
+            </div>
+        </li>
+        <li v-if="getId">
+            <div class="property">
+                <div class="bold">Stroke</div>
+                <div>
+                    <button type="button" @click="toggleStroke" class="property-toggle-btn">
+                        {{ stroke.showProperties ? '-' : '+'}}
+                    </button>
+                </div>
+            </div>
+            <div class="property-container" v-if="stroke.showProperties">
+                <ColorPicker 
+                    :color="getStroke ? getStroke.style : stroke.color"
+                    @color-changed="handleColorChanged($event, 'STROKE')"
+                />
             </div>
         </li>
         <li>
@@ -131,6 +171,11 @@ export default class PropertiesMenu extends Vue {
                 this.$store.commit('properties/setCanvas', color)
                 break
         }
+    }
+
+    public updateProperty(property: string, value: string) {
+        this.$store.commit('properties/updateProperty', {property, value});
+        this.$emit('update-properties');
     }
 }
 </script>

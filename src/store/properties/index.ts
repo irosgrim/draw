@@ -54,9 +54,26 @@ export const getters: GetterTree<PropertiesStore, RootState> = {
     getCanvas(state) {
         return state.canvas;
     },
+    getShapeProperties(state) {
+        return state;
+    }
 };
 
 export const mutations: MutationTree<PropertiesStore> = {
+    updateProperty(state, payload: {property: string, value: string}) {
+        if(payload.property === 'X') {
+            state.x = parseFloat(payload.value);
+        }
+        if(payload.property === 'Y') {
+            state.y = parseFloat(payload.value);
+        }
+        if(payload.property === 'WIDTH') {
+            state.width = parseFloat(payload.value);
+        }
+        if(payload.property === 'HEIGHT') {
+            state.height = parseFloat(payload.value);
+        }
+    },
     setCurrentShape(state, shapeProperties: {id:string, x: number, y: number, width: number, height: number, fill: string, stroke: Stroke | null}) {
         state.id = shapeProperties.id;
         state.x = shapeProperties.x;

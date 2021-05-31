@@ -3,6 +3,7 @@
 </template>
 
 <script lang="ts">
+import { uid } from 'uid';
 import { Dictionary, ShapeName, Stroke } from '@/Types/types';
 import { Shape } from './canvas';
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
@@ -19,14 +20,22 @@ const toolbar = namespace('toolbar');
 let timer: number;
 @Component
 export default class Canvas extends Vue {
+    @Prop() updatePropertiesForShape!: boolean;
     @Prop({default: 'SELECT'}) private selectedTool!: Tool;
     @Prop() saveCanvas!: boolean;
 
     @State('properties') private properties!: PropertiesStore;
     @State('toolbar') private toolbar!: ToolbarStore;
+    @properties.Getter('getId') public getShapeId!: string;
     @properties.Getter('getStroke') public getStroke!: Stroke;
     @properties.Getter('getFill') public getFill!: string;
     @properties.Getter('getCanvas') public getCanvas!: string;
+    @properties.Getter('getX') public getX!: number;
+    @properties.Getter('getY') public getY!: number;
+    @properties.Getter('getWidth') public getWidth!: number;
+    @properties.Getter('getHeight') public getHeight!: number;
+
+
 
     private canvas: HTMLCanvasElement | null = null;
     private context: CanvasRenderingContext2D | null = null;
@@ -45,6 +54,18 @@ export default class Canvas extends Vue {
     }
     private selectedShapes: string[] = [];
     private shapes: Dictionary<Shape> = {};
+    public copyShapes: string[] = [];
+
+    @Watch('updatePropertiesForShape')
+    private onUpdateProperties() {
+        this.shapes[this.getShapeId].x = this.getX;
+        this.shapes[this.getShapeId].y = this.getY;
+        this.shapes[this.getShapeId].width = this.getWidth;
+        this.shapes[this.getShapeId].height = this.getHeight;
+        this.shapes[this.getShapeId].stroke = this.getStroke;
+        this.shapes[this.getShapeId].fill = this.getFill;
+        this.draw();
+    }
 
     @Watch('saveCanvas')
     private onSaveCanvas() {
@@ -263,6 +284,26 @@ export default class Canvas extends Vue {
     private onKeyUp(e: KeyboardEvent) {
         e.preventDefault();
         const keyCode = e.key.toLowerCase();
+        const ctrlIsPressed = e.ctrlKey || e.metaKey;
+        console.log(ctrlIsPressed + ' ' + keyCode);
+        if(keyCode === 'c' && ctrlIsPressed && this.selectedShapes.length) {
+            this.copyShapes.splice(0);
+            this.copyShapes = [...this.selectedShapes];
+        }
+        if(keyCode === 'v' && ctrlIsPressed) {
+            for(const id of this.selectedShapes) {
+                const shape = this.shapes[id];
+                shape.isSelected = false;
+            }
+            this.copyShapes.map(s => {
+                const shape = this.shapes[s];
+                const shapeCopy = new Shape((shape.type as ShapeName), { stroke: shape.stroke!, fill: shape.fill }, {x: shape.x + 20, y: shape.y + 20, w: shape.width, h: shape.height});
+                shapeCopy.isSelected = true;
+                this.shapes = {...this.shapes, [shapeCopy.id]: shapeCopy}
+            });
+
+            this.draw();
+        }
         switch(keyCode) {
             case 'h':
                 this.$emit('select-tool', 'PAN');

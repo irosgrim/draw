@@ -1,11 +1,12 @@
 <template>
   <div id="app">
     <MainMenu 
-        @selected-tool="selectedTool = $event" 
+        @selected-tool="selectedTool = $event"
         :selected-tool="selectedTool"
         :menu="defaultMenu"
     />
     <PropertiesMenu
+        @update-properties="onUpdatePropertiesForShape"
         @export-png="exportPNG"
     />
     <ContextMenu 
@@ -15,6 +16,7 @@
     <Canvas 
         :selectedTool="selectedTool"
         :saveCanvas="saveCanvas"
+        :updatePropertiesForShape="updateShapeProperties"
         @select-tool="selectTool"
         @mouse-up="resetSelectedTool"
         @context-menu="handleContextMenu($event)"
@@ -67,6 +69,7 @@ export default class App extends Vue {
             disabled: true
         }
     };
+    public shouldUpdatePropertiesForShape = false;
     public saveCanvas = false;
     public selectedTool: Tool = 'SELECT';
     public contextMenu: ContextMenuProperties= {
@@ -75,6 +78,17 @@ export default class App extends Vue {
             x: 0,
             y: 0,
         }
+    }
+
+    public get updateShapeProperties() {
+        console.log(this.shouldUpdatePropertiesForShape);
+        return this.shouldUpdatePropertiesForShape;
+    }
+
+    public onUpdatePropertiesForShape() {
+        this.shouldUpdatePropertiesForShape = true;
+        console.log('here');
+        setTimeout(() => this.shouldUpdatePropertiesForShape = false, 500)
     }
 
     public resetSelectedTool(): void {
