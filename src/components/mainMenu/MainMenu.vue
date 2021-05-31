@@ -8,7 +8,7 @@
                 <button 
                     type="button" 
                     @click="$emit('selected-tool', menuItem.label)"
-                    :class="{selected: menuItem.selected}"
+                    :class="{selected: menuItem.selected, disabled: menuItem.disabled}"
                     :disabled="menuItem.disabled"
                 >
                     <img :src="menuItem.icon" :alt="menuItem.label">

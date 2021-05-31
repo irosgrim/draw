@@ -62,6 +62,12 @@ export default class App extends Vue {
             selected: false,
             disabled: false
         },
+        LINE: {
+            label: 'LINE',
+            icon: require('@/assets/icons/line.svg'),
+            selected: false,
+            disabled: false
+        },
         PAN: {
             label: 'PAN',
             icon: require('@/assets/icons/pan.svg'),

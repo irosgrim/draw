@@ -19,9 +19,6 @@ button {
     &:active {
         outline: none;
     }
-    &:disabled {
-        opacity: 0.5;
-    }
 }
 input[type="text"] {
     &:focus {
@@ -177,7 +174,7 @@ input[type="text"] {
 }
 .disabled {
     pointer-events: none;
-    opacity: 0.5;
+    opacity: 0.25;
 }
 .d {
     &-flex {

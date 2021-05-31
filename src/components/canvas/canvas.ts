@@ -6,6 +6,8 @@ export class Shape {
     public id = '';
     public x = 0;
     public y = 0;
+    public endX = 0;
+    public endY = 0;
     public width = 0;
     public height = 0;
     public stroke: Stroke | null = null;
@@ -17,22 +19,29 @@ export class Shape {
     constructor(type: ShapeName, shapeProperties: {coords?: ShapeCoords, stroke?: Stroke, fill?: string}, copyShape?: {x: number, y: number, h: number, w: number}) {
         this.id = uid(12);
         if(shapeProperties.coords) {
-            const isNegativeWidth = shapeProperties.coords.end.x <= shapeProperties.coords.start.x;
-            const isNegativeHeight = shapeProperties.coords.end.y <= shapeProperties.coords.start.y;
-
-            if(isNegativeWidth) {
-                this.x = shapeProperties.coords.end.x;
-                this.width = Math.abs(shapeProperties.coords.start.x - shapeProperties.coords.end.x);
-            } else {
+            if(type === 'LINE') {
                 this.x = shapeProperties.coords.start.x;
-                this.width = Math.abs(shapeProperties.coords.end.x - shapeProperties.coords.start.x);
-            }
-            if(isNegativeHeight) {
-                this.y = shapeProperties.coords.end.y;
-                this.height = Math.abs(shapeProperties.coords.start.y - shapeProperties.coords.end.y);
-            } else {
                 this.y = shapeProperties.coords.start.y;
-                this.height = Math.abs(shapeProperties.coords.end.y - shapeProperties.coords.start.y);
+                this.endX = shapeProperties.coords.end.x;
+                this.endY = shapeProperties.coords.end.y;
+            } else {
+                const isNegativeWidth = shapeProperties.coords.end.x <= shapeProperties.coords.start.x;
+                const isNegativeHeight = shapeProperties.coords.end.y <= shapeProperties.coords.start.y;
+
+                if(isNegativeWidth) {
+                    this.x = shapeProperties.coords.end.x;
+                    this.width = Math.abs(shapeProperties.coords.start.x - shapeProperties.coords.end.x);
+                } else {
+                    this.x = shapeProperties.coords.start.x;
+                    this.width = Math.abs(shapeProperties.coords.end.x - shapeProperties.coords.start.x);
+                }
+                if(isNegativeHeight) {
+                    this.y = shapeProperties.coords.end.y;
+                    this.height = Math.abs(shapeProperties.coords.start.y - shapeProperties.coords.end.y);
+                } else {
+                    this.y = shapeProperties.coords.start.y;
+                    this.height = Math.abs(shapeProperties.coords.end.y - shapeProperties.coords.start.y);
+                }
             }
         }
         if(copyShape) {
@@ -64,6 +73,14 @@ export class Shape {
             // console.log(checkIfMouseOverNEHandle());
             return mouseIsInsideRectangle(e.clientX, e.clientY, offsetX, offsetY, this.x, this.y, this.height, this.width);
         }
+        if(this.type === 'LINE') { 
+            // console.log(mouseX < this.x + this.width && mouseX > this.x + this.width && mouseY > this.y - 5 && mouseY < this.y + 5);
+          
+            return (
+                mouseX < this.endX && mouseX > this.x &&
+                mouseY > this.y - 5 && mouseY < this.endY + 5
+            )
+        }
     }
 
     public get isSelected(): boolean {
@@ -90,6 +107,9 @@ export class Shape {
             case 'CIRCLE':
                 this.drawCircle(context)
                 break;
+            case 'LINE':
+                this.drawLine(context)
+                break;
 
 
         }
@@ -110,7 +130,7 @@ export class Shape {
         }
 
         if(this.isSelected) {
-            this.drawResizeHandlers(context);
+            this.drawResizeHandles(context);
         }
         context.closePath();
     }
@@ -127,17 +147,46 @@ export class Shape {
             context.strokeRect(this.x, this.y, this.width, this.height);
         }
         if(this.isSelected) {
-            this.drawResizeHandlers(context);
+            this.drawResizeHandles(context);
         }
+        context.closePath();
     }
 
-    private drawResizeHandlers(context: CanvasRenderingContext2D) {
+    public drawLine(context: CanvasRenderingContext2D) {
+        // if(this.fill) {
+        //     // context.fillStyle = this.fill;
+        //     // context.fillRect(this.x, this.y, this.width, this.height);
+        // }
+        // if(this.stroke) {
+        //     // context.setLineDash([]);
+        //     // context.strokeStyle = this.stroke.style;
+        //     // context.lineWidth = this.stroke.width;
+        //     // context.strokeRect(this.x, this.y, this.width, this.height);
+        // }
+        context.beginPath();
+        context.setLineDash([]);
+        context.strokeStyle = 'black';
+        context.moveTo(this.x, this.y);
+        context.lineTo(this.endX, this.endY);
+        context.stroke()
+        context.closePath();
+        if(this.isSelected) {
+            this.drawLineResizeHandles(context);
+        }
+    }
+    drawLineResizeHandles(context: CanvasRenderingContext2D) {
+        context.setLineDash([]);
+        new ResizeHandle('W', {x: this.x, y: this.y}, Math.abs(this.endX - this.x), Math.abs(this.endY - this.y), context);
+        // new ResizeHandle('E', {x: this.endX, y: this.endY}, Math.abs(this.endX - this.x), Math.abs(this.endY - this.y), context);
+    }
+
+    private drawResizeHandles(context: CanvasRenderingContext2D) {
             context.setLineDash([]);
             context.lineWidth = 1;
             context.strokeStyle = '#00a7f9';
             context.strokeRect(this.x, this.y, this.width, this.height);
 
-            (["NW", "NE", "SW", "SE"] as PolarCoordinate[]).forEach(x => new ResizeHandler(x, {x: this.x, y: this.y}, this.width, this.height, context));
+            (["NW", "NE", "SW", "SE"] as PolarCoordinate[]).forEach(x => new ResizeHandle(x, {x: this.x, y: this.y}, this.width, this.height, context));
 
             const text = `${this.width} x ${this.height}`;
             const infoBoxH = 16;
@@ -177,28 +226,28 @@ export class Mouse {
     }
 }
 
-export class ResizeHandler {
-    private handlerSize = 5;
+export class ResizeHandle {
+    private handleSize = 5;
     constructor(public position: PolarCoordinate, private coords: Coords, private width: number, private height: number, private context: CanvasRenderingContext2D) {
-        this.createHandler();
+        this.createHandle();
     }
-    private createHandler() {
+    private createHandle() {
         this.context.fillStyle = '#ffffff';
         this.context.strokeStyle = '#000000';
 
         const NW = {
-            x: this.coords.x - this.handlerSize / 2,
-            y: this.coords.y - this.handlerSize / 2
+            x: this.coords.x - this.handleSize / 2,
+            y: this.coords.y - this.handleSize / 2
         }
 
         const NE = {
-            x: this.coords.x + this.width - this.handlerSize / 2,
+            x: this.coords.x + this.width - this.handleSize / 2,
             y: NW.y,
         }
 
         const SW = {
             x: NW.x, 
-            y: this.coords.y + this.height - this.handlerSize / 2
+            y: this.coords.y + this.height - this.handleSize / 2
         }
 
         const SE = {
@@ -209,20 +258,28 @@ export class ResizeHandler {
         switch (this.position) {
             
             case 'NW':
-                this.context.fillRect(NW.x, NW.y, this.handlerSize, this.handlerSize);
-                this.context.strokeRect(NW.x, NW.y, this.handlerSize, this.handlerSize);
+                this.context.fillRect(NW.x, NW.y, this.handleSize, this.handleSize);
+                this.context.strokeRect(NW.x, NW.y, this.handleSize, this.handleSize);
                 break;
             case 'NE':
-                this.context.fillRect(NE.x, NE.y, this.handlerSize, this.handlerSize);
-                this.context.strokeRect(NE.x, NE.y, this.handlerSize, this.handlerSize);
+                this.context.fillRect(NE.x, NE.y, this.handleSize, this.handleSize);
+                this.context.strokeRect(NE.x, NE.y, this.handleSize, this.handleSize);
                 break;
             case 'SW':
-                this.context.fillRect(SW.x, SW.y, this.handlerSize, this.handlerSize);
-                this.context.strokeRect(SW.x, SW.y, this.handlerSize, this.handlerSize);
+                this.context.fillRect(SW.x, SW.y, this.handleSize, this.handleSize);
+                this.context.strokeRect(SW.x, SW.y, this.handleSize, this.handleSize);
                 break;
             case 'SE':
-                this.context.fillRect(SE.x, SE.y, this.handlerSize, this.handlerSize);
-                this.context.strokeRect(SE.x, SE.y, this.handlerSize, this.handlerSize);
+                this.context.fillRect(SE.x, SE.y, this.handleSize, this.handleSize);
+                this.context.strokeRect(SE.x, SE.y, this.handleSize, this.handleSize);
+                break;
+            case 'W':
+                this.context.fillRect(this.coords.x - this.handleSize, this.coords.y - this.handleSize / 2, this.handleSize, this.handleSize);
+                this.context.strokeRect(this.coords.x - this.handleSize, this.coords.y - this.handleSize / 2, this.handleSize, this.handleSize);
+                break;
+            case 'E':
+                this.context.fillRect(this.coords.x - this.handleSize, this.coords.y - this.handleSize / 2, this.handleSize, this.handleSize);
+                this.context.strokeRect(this.coords.x - this.width + this.handleSize, this.coords.y + this.height + this.handleSize / 2, this.handleSize, this.handleSize);
                 break;
         }
     }

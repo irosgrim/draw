@@ -210,11 +210,11 @@ export default class Canvas extends Vue {
         
         this.$set(this.endPoint, 'x', mouseX);
         this.$set(this.endPoint, 'y', mouseY);
-        if(['RECTANGLE', 'CIRCLE'].includes(this.selectedTool)) {
+        if(['RECTANGLE', 'CIRCLE', 'LINE'].includes(this.selectedTool)) {
             const fill = this.getFill;
             const stroke = this.getStroke;
             // @ts-ignore
-            const s = new Shape(this.selectedTool, { coords: {start: {...this.startPoint}, end: {...this.endPoint}}, fill: fill, stroke });
+            const s = new Shape(this.selectedTool, { coords: {start: {...this.startPoint}, end: {x: mouseX, y: mouseY}}, fill: fill, stroke });
             this.$set(this.shapes, s.id, s);
             // s.drawShape(this.context!);
             this.draw();
@@ -237,7 +237,13 @@ export default class Canvas extends Vue {
             if(this.selectedTool === 'SELECT') {
                 for (const id in this.shapes) {
                     const shape = this.shapes[id];
-                    if(shape.isSelected) {
+                    if(shape.isSelected && shape.type === 'LINE') {
+                        shape.x += dx;
+                        shape.y += dy;
+                        shape.endX += dx;
+                        shape.endY += dy;
+                    }
+                    if(shape.isSelected && shape.type !== 'LINE') {
                         const shapeProps = {
                             id: shape.id, 
                             x: shape.x, 
@@ -257,7 +263,8 @@ export default class Canvas extends Vue {
                 console.log('panning');
                 return;
             }
-            if(this.selectedTool === 'RECTANGLE' || this.selectedTool === 'CIRCLE') {
+            if(['RECTANGLE', 'CIRCLE', 'LINE'].includes(this.selectedTool)) {
+                // @ts-ignore
                 this.drawShapeGhost({x: mouseX, y: mouseY}, this.context!, this.selectedTool);
             }
             
@@ -285,7 +292,6 @@ export default class Canvas extends Vue {
         e.preventDefault();
         const keyCode = e.key.toLowerCase();
         const ctrlIsPressed = e.ctrlKey || e.metaKey;
-        console.log(ctrlIsPressed + ' ' + keyCode);
         if(keyCode === 'c' && ctrlIsPressed && this.selectedShapes.length) {
             this.copyShapes.splice(0);
             this.copyShapes = [...this.selectedShapes];
@@ -316,6 +322,9 @@ export default class Canvas extends Vue {
                 break;
             case 'o':
                 this.$emit('select-tool', 'CIRCLE');
+                break;
+            case 'l':
+                this.$emit('select-tool', 'LINE');
                 break;
         }
     }
@@ -439,6 +448,7 @@ export default class Canvas extends Vue {
         context!.fillStyle = 'rgba(255, 191, 203, 0.3)';
         switch(shape) {
             case 'RECTANGLE':
+                context.beginPath();
                 context!.fillRect(this.startPoint.x, this.startPoint.y, coords.x - this.startPoint.x, coords.y - this.startPoint.y);
                 context!.strokeRect(this.startPoint.x, this.startPoint.y,  coords.x - this.startPoint.x, coords.y - this.startPoint.y);
                 break;
@@ -455,6 +465,13 @@ export default class Canvas extends Vue {
                 );
                 context.stroke();
                 context.closePath();
+                break;
+            case 'LINE':
+                context.beginPath();
+                context!.strokeStyle = 'rgba(255, 191, 255, 0.9)';
+                context.moveTo(coords.x, coords.y);
+                context.lineTo(this.endPoint.x, this.endPoint.y);
+                context.stroke()
                 break;
         }
     }
