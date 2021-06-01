@@ -1,5 +1,4 @@
-import { Stroke } from '@/Types/types';
-
+import { Shadow, Stroke } from '@/Types/types';
 export interface Color {
     color: string;
     opacity: number;
@@ -12,5 +11,9 @@ export interface PropertiesStore {
     height: number;
     stroke: Stroke | null;
     fill: string;
+    shadowX: number;
+    shadowY: number;
+    shadowBlur: number;
+    shadowColor: string;
     canvas: string;
 }

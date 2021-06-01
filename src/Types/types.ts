@@ -1,4 +1,4 @@
-export type Properties = 'STROKE' | 'FILL' | 'CANVAS';
+export type Properties = 'STROKE' | 'FILL' | 'CANVAS' | 'SHADOW';
 export type ShapeName = 'RECTANGLE' | 'CIRCLE' | 'LINE';
 export type PolarCoordinate = 'NW' | 'NE' | 'SW' | 'SE' | 'N' | 'S' | 'W' | 'E';
 
@@ -42,4 +42,11 @@ export interface ShapeCoords {
 export interface Stroke {
     width: number;
     style: string;
+}
+
+export interface Shadow {
+    color: string;
+    x: number;
+    y: number;
+    blur: number;
 }

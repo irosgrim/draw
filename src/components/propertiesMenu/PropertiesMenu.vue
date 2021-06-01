@@ -32,22 +32,22 @@
                     <label for="X">X </label>
                     <input
                         class="property-input"
-                        :value="getX" 
+                        :value="getShapeProperties.x" 
                         type="number" 
                         name="X" 
                         id="X"
-                        @keyup.enter="updateProperty('X', $event.target.value)"
+                        @keyup.enter="updateProperty('x', $event.target.value)"
                     >
                 </div>
                 <div class="d-flex align-items-center">
                     <label for="Y">Y </label>
                     <input 
                         class="property-input"
-                        :value="getY" 
+                        :value="getShapeProperties.y" 
                         type="number" 
                         name="Y" 
                         id="Y"
-                        @keyup.enter="updateProperty('Y', $event.target.value)"
+                        @keyup.enter="updateProperty('y', $event.target.value)"
                     >
                 </div>
             </div>
@@ -56,22 +56,22 @@
                     <label for="width">W </label>
                     <input 
                         class="property-input"
-                        :value="getWidth" 
+                        :value="getShapeProperties.width" 
                         type="number" 
                         name="width" 
                         id="width"
-                        @keyup.enter="updateProperty('WIDTH', $event.target.value)"
+                        @keyup.enter="updateProperty('width', $event.target.value)"
                     >
                 </div>
                 <div class="d-flex align-items-center">
                     <label for="height">H </label>
                     <input 
                         class="property-input"
-                        :value="getHeight" 
+                        :value="getShapeProperties.height" 
                         type="number" 
                         name="height" 
                         id="height"
-                        @keyup.enter="updateProperty('HEIGHT', $event.target.value)"
+                        @keyup.enter="updateProperty('height', $event.target.value)"
                     >
                 </div>
             </div>
@@ -96,7 +96,7 @@
             <div class="property-container" v-if="fill.showProperties">
                 <ColorPicker
                     :color="getFill"
-                    @color-changed="handleColorChanged($event, 'FILL')"
+                    @color-changed="updateProperty('fill', $event)"
                 />
 
             </div>
@@ -111,54 +111,62 @@
             <div class="property-container" v-if="stroke.showProperties">
                 <ColorPicker 
                     :color="getStroke ? getStroke.style : stroke.color"
-                    @color-changed="handleColorChanged($event, 'STROKE')"
+                    @color-changed="updateProperty('stroke',  { width: 1, style: $event})"
                 />
             </div>
         </li>
-        <li class="properties-menu-item">
+        <li v-if="getId" class="properties-menu-item">
              <button type="button" @click="toggleShadow" class="property m-negative-2">
                 <div class="bold">Shadow</div>
                 <div>
-                    {{ shadow.showProperties ? '-' : '+'}}
+                    <button v-if="getShadow.color" @click="$store.commit('properties/removeShadow')">-</button>
+                    <div v-else>+</div>
                 </div>
             </button>
-            <div class="property-container" v-if="shadow.showProperties">
+            <div class="property-container" v-if="getShapeProperties.shadowColor !== ''">
                  <div class="d-flex mb-3">
                     <div>
                         <div class="d-flex align-items-center mb-2">
-                            <label for="X">X </label>
+                            <label for="shadowX">X </label>
                             <input
                                 class="property-input"
                                 type="number" 
-                                name="blurX" 
-                                id="blurX"
+                                name="shadowX"
+                                :value="getShapeProperties.shadowX"
+                                id="shadowX"
+                                @keyup.enter="updateProperty('shadowX', $event.target.value)"
                             >
                         </div>
                         <div class="d-flex align-items-center">
-                            <label for="Y">Y </label>
+                            <label for="shadowY">Y </label>
                             <input 
                                 class="property-input"
                                 type="number" 
-                                name="blurY" 
-                                id="blurY"
+                                name="shadowY"
+                                :value="getShapeProperties.shadowY"
+                                id="shadowY"
+                                @keyup.enter="updateProperty('shadowY', $event.target.value)"
                             >
                         </div>
                     </div>
                     <div class="ml-3">
                         <div class="d-flex align-items-center">
-                            <label for="X">Blur </label>
+                            <label for="blur">Blur </label>
                             <input
                                 class="property-input"
-                                :value="getX" 
+                                :value="getShapeProperties.shadowBlur" 
                                 type="number" 
-                                name="X" 
-                                id="X"
-                                @keyup.enter="updateProperty('X', $event.target.value)"
+                                name="blur" 
+                                id="blur"
+                                @keyup.enter="updateProperty('shadowBlur', $event.target.value)"
                             >
                         </div>
                     </div>
                 </div>
-                <ColorPicker 
+                <ColorPicker
+                    v-if="getShapeProperties.shadowColor"
+                    :color="getShapeProperties.shadowColor"
+                    @color-changed="updateProperty('shadowColor', $event)"
                 />
             </div>
         </li>
@@ -185,13 +193,13 @@
 </template>
 
 <script lang="ts">
-import { Vue, Component } from 'vue-property-decorator';
+import { Vue, Component, Watch } from 'vue-property-decorator';
 import ColorPicker from '@/components/colorPicker/ColorPicker.vue';
 import {
   State,
   namespace
 } from 'vuex-class'
-import { Properties, Stroke } from '@/Types/types';
+import { Properties, Shadow, Stroke } from '@/Types/types';
 import { PropertiesStore } from '@/store/properties/types';
 
 const properties = namespace('properties');
@@ -203,7 +211,8 @@ const properties = namespace('properties');
 })
 export default class PropertiesMenu extends Vue {
     @State('properties') public properties!: PropertiesStore;
-    @properties.Getter('getId') public getId!: number;
+    @properties.Getter('getShapeProperties') public getShapeProperties!: any;
+    @properties.Getter('getId') public getId!: string;
     @properties.Getter('getX') public getX!: number;
     @properties.Getter('getY') public getY!: number;
     @properties.Getter('getWidth') public getWidth!: number;
@@ -211,6 +220,10 @@ export default class PropertiesMenu extends Vue {
     @properties.Getter('getStroke') public getStroke!: Stroke;
     @properties.Getter('getFill') public getFill!: string;
     @properties.Getter('getCanvas') public getCanvas!: string;
+    @properties.Getter('getShadow') public getShadow!: Shadow;
+    @properties.Getter('getShadowColor') public getShadowColor!: string;
+
+
 
     public stroke = {
         showProperties: false,
@@ -228,6 +241,12 @@ export default class PropertiesMenu extends Vue {
         showProperties: false,
     }
 
+    @Watch('getShadowColor')
+    private onShadowChange(shadowProperties: any) {
+        // console.log(shadowProperties);
+        
+    }
+
     public toggleStroke() {
         this.stroke.showProperties = !this.stroke.showProperties;
     }
@@ -237,19 +256,35 @@ export default class PropertiesMenu extends Vue {
     }
 
     public toggleShadow() {
-        this.shadow.showProperties = !this.shadow.showProperties;
+        if(this.getId !== '' && this.getShapeProperties.shadowColor !== '') {
+            this.shadow.showProperties = true;
+            return;
+        }
+        if(this.getId !== '' && this.getShapeProperties.shadowColor === '') {
+
+            this.$store.commit('properties/setDefaultShadow');
+            this.shadow.showProperties = true;
+            return;
+        } 
+        this.shadow.showProperties = false;
+        this.$store.dispatch('properties/removeShadow');
+        
     }
 
     public handleColorChanged(color: string, property: Properties) {
         switch(property) {
-            case 'STROKE':
-                this.stroke.color = color;
-                this.$store.commit('properties/setStroke', {style: color, width: 1})
-                break;
-            case 'FILL':
-                this.fill.color = color;
-                this.$store.commit('properties/setFill', color)
-                break;
+            // case 'STROKE':
+            //     this.stroke.color = color;
+            //     this.$store.commit('properties/setStroke', {style: color, width: 1})
+            //     break;
+            // case 'FILL':
+            //     this.fill.color = color;
+            //     this.$store.commit('properties/setFill', color)
+            //     break;
+            // case 'SHADOW':
+            //     // this.fill.color = color;
+            //     this.$store.commit('properties/setShadowProperty', { property: 'shadowColor', value: color })
+            //     break;
             case 'CANVAS':
                 this.canvas.color = color;
                 this.$store.commit('properties/setCanvas', color)
@@ -258,8 +293,8 @@ export default class PropertiesMenu extends Vue {
     }
 
     public updateProperty(property: string, value: string) {
-        this.$store.commit('properties/updateProperty', {property, value});
-        this.$emit('update-properties');
+        this.$store.dispatch('properties/setCurrentShape', {[property]: value });
+        // this.$emit('update-properties');
     }
 }
 </script>

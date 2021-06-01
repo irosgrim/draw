@@ -1,5 +1,5 @@
 import { mouseIsInsideEllipse, mouseIsInsideRectangle } from '@/helpers/geometry';
-import { Coords, PolarCoordinate, ShapeCoords, ShapeName, Stroke } from '@/Types/types';
+import { Coords, PolarCoordinate, Shadow, ShapeCoords, ShapeName, Stroke } from '@/Types/types';
 import { uid } from 'uid';
 
 export class Shape {
@@ -14,6 +14,7 @@ export class Shape {
     public fill = '';
     public type: ShapeName | '' = '';
     public rotation = 0;
+    public shadow: Shadow | null = null;
     private _isMoving = false;
     private _isSelected = false;
     
@@ -100,117 +101,120 @@ export class Shape {
         this._isMoving = value;
     }
 
-    public drawShape(context: CanvasRenderingContext2D) {
+    public drawShape(ctx: CanvasRenderingContext2D) {
+        ctx.save();
+        if(this.shadow) {
+            this.applyShadow(ctx);
+        }
         switch(this.type) {
             case 'RECTANGLE':
-                this.drawRectangle(context);
+                this.drawRectangle(ctx);
                 break;
             case 'CIRCLE':
-                this.drawCircle(context)
+                this.drawCircle(ctx)
                 break;
             case 'LINE':
-                this.drawLine(context)
+                this.drawLine(ctx)
                 break;
-
-
         }
+
     }
-    public drawCircle(context: CanvasRenderingContext2D) {
-        context.beginPath();
+    public drawCircle(ctx: CanvasRenderingContext2D) {
+        ctx.beginPath();
         if(this.fill) {
-            context.fillStyle = this.fill;
-            context.ellipse(this.x + this.width/2, this.y + this.height/2, this.width/2, this.height/2, 0, 0, 2*Math.PI);
-            context.fill();
+            ctx.fillStyle = this.fill;
+            ctx.ellipse(this.x + this.width/2, this.y + this.height/2, this.width/2, this.height/2, 0, 0, 2*Math.PI);
+            ctx.fill();
         }
         if(this.stroke) {
-            context.setLineDash([]);
-            context.strokeStyle = this.stroke.style;
-            context.lineWidth = this.stroke.width;
-            context.ellipse(this.x + this.width/2, this.y + this.height/2, this.width/2, this.height/2, 0, 0, 2*Math.PI);
-            context.stroke();
+            ctx.setLineDash([]);
+            ctx.strokeStyle = this.stroke.style;
+            ctx.lineWidth = this.stroke.width;
+            ctx.ellipse(this.x + this.width/2, this.y + this.height/2, this.width/2, this.height/2, 0, 0, 2*Math.PI);
+            ctx.stroke();
         }
 
+        ctx.restore();
         if(this.isSelected) {
-            this.drawResizeHandles(context);
+            this.drawResizeHandles(ctx);
         }
-        context.closePath();
+        ctx.closePath();
     }
 
-    public drawRectangle(context: CanvasRenderingContext2D) {
-        context.save();
-        // context.translate(this.x, this.y);
-        context.rotate((Math.PI / 180) * this.rotation);
-        context.translate(50, -800);
-        context.shadowColor = "rgba(0, 0, 0, 0.2)";
-        context.shadowBlur    = 20;
-        context.shadowOffsetX = 30;
-        context.shadowOffsetY = 30;
+    public drawRectangle(ctx: CanvasRenderingContext2D) {
         if(this.fill) {
-            context.fillStyle = this.fill;
-            context.fillRect(this.x, this.y, this.width, this.height);
+            ctx.fillStyle = this.fill;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
             
         }
         if(this.stroke) {
-            context.setLineDash([]);
-            context.strokeStyle = this.stroke.style;
-            context.lineWidth = this.stroke.width;
-            context.strokeRect(this.x, this.y, this.width, this.height);
+            ctx.setLineDash([]);
+            ctx.strokeStyle = this.stroke.style;
+            ctx.lineWidth = this.stroke.width;
+            ctx.strokeRect(this.x, this.y, this.width, this.height);
         }
-
+        ctx.restore();
         if(this.isSelected) {
-            this.drawResizeHandles(context);
+            this.drawResizeHandles(ctx);
         }
-        context.restore();
 
     }
 
-    public drawLine(context: CanvasRenderingContext2D) {
+    private applyShadow(ctx: CanvasRenderingContext2D) {
+        ctx.shadowColor = this.shadow!.color;
+        ctx.shadowBlur = this.shadow!.blur;
+        ctx.shadowOffsetX = this.shadow!.x;
+        ctx.shadowOffsetY = this.shadow!.y;
+    }
+
+    public drawLine(ctx: CanvasRenderingContext2D) {
         // if(this.fill) {
-        //     // context.fillStyle = this.fill;
-        //     // context.fillRect(this.x, this.y, this.width, this.height);
+        //     // ctx.fillStyle = this.fill;
+        //     // ctx.fillRect(this.x, this.y, this.width, this.height);
         // }
         // if(this.stroke) {
-        //     // context.setLineDash([]);
-        //     // context.strokeStyle = this.stroke.style;
-        //     // context.lineWidth = this.stroke.width;
-        //     // context.strokeRect(this.x, this.y, this.width, this.height);
+        //     // ctx.setLineDash([]);
+        //     // ctx.strokeStyle = this.stroke.style;
+        //     // ctx.lineWidth = this.stroke.width;
+        //     // ctx.strokeRect(this.x, this.y, this.width, this.height);
         // }
-        context.beginPath();
-        context.setLineDash([]);
-        context.strokeStyle = 'black';
-        context.moveTo(this.x, this.y);
-        context.lineTo(this.endX, this.endY);
-        context.stroke()
-        context.closePath();
+        ctx.beginPath();
+        ctx.setLineDash([]);
+        ctx.strokeStyle = 'black';
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.endX, this.endY);
+        ctx.stroke()
+        ctx.closePath();
+        ctx.restore();
         if(this.isSelected) {
-            this.drawLineResizeHandles(context);
+            this.drawLineResizeHandles(ctx);
         }
     }
-    drawLineResizeHandles(context: CanvasRenderingContext2D) {
-        context.setLineDash([]);
-        new ResizeHandle('W', {x: this.x, y: this.y}, Math.abs(this.endX - this.x), Math.abs(this.endY - this.y), context);
-        // new ResizeHandle('E', {x: this.endX, y: this.endY}, Math.abs(this.endX - this.x), Math.abs(this.endY - this.y), context);
+    drawLineResizeHandles(ctx: CanvasRenderingContext2D) {
+        ctx.setLineDash([]);
+        new ResizeHandle('W', {x: this.x, y: this.y}, Math.abs(this.endX - this.x), Math.abs(this.endY - this.y), ctx);
+        // new ResizeHandle('E', {x: this.endX, y: this.endY}, Math.abs(this.endX - this.x), Math.abs(this.endY - this.y), ctx);
     }
 
-    private drawResizeHandles(context: CanvasRenderingContext2D) {
-            context.setLineDash([]);
-            context.lineWidth = 1;
-            context.strokeStyle = '#00a7f9';
-            context.strokeRect(this.x, this.y, this.width, this.height);
+    private drawResizeHandles(ctx: CanvasRenderingContext2D) {
+            ctx.setLineDash([]);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#00a7f9';
+            ctx.strokeRect(this.x, this.y, this.width, this.height);
 
-            (["NW", "NE", "SW", "SE"] as PolarCoordinate[]).forEach(x => new ResizeHandle(x, {x: this.x, y: this.y}, this.width, this.height, context));
+            (["NW", "NE", "SW", "SE"] as PolarCoordinate[]).forEach(x => new ResizeHandle(x, {x: this.x, y: this.y}, this.width, this.height, ctx));
 
             const text = `${this.width} x ${this.height}`;
             const infoBoxH = 16;
-            const textWidth = context.measureText(text).width;
+            const textWidth = ctx.measureText(text).width;
             const infoBoxW = textWidth + 16;
-            context.fillStyle = 'rgba(0, 166, 249, 0.7)';
+            ctx.fillStyle = 'rgba(0, 166, 249, 0.7)';
 
-            context.fillRect(this.x + this.width / 2 - infoBoxW / 2, this.y + this.height + 16 - infoBoxH / 2, infoBoxW, infoBoxH);
-            context.fillStyle = "#ffffff";
-            context.textAlign = "center";
-            context.font = "12px Arial";
-            context.fillText(text, this.x + this.width / 2, this.y + this.height + 16 + infoBoxH / 3.6);
+            ctx.fillRect(this.x + this.width / 2 - infoBoxW / 2, this.y + this.height + 16 - infoBoxH / 2, infoBoxW, infoBoxH);
+            ctx.fillStyle = "#ffffff";
+            ctx.textAlign = "center";
+            ctx.font = "12px Arial";
+            ctx.fillText(text, this.x + this.width / 2, this.y + this.height + 16 + infoBoxH / 3.6);
 
     }
 
@@ -241,12 +245,12 @@ export class Mouse {
 
 export class ResizeHandle {
     private handleSize = 5;
-    constructor(public position: PolarCoordinate, private coords: Coords, private width: number, private height: number, private context: CanvasRenderingContext2D) {
+    constructor(public position: PolarCoordinate, private coords: Coords, private width: number, private height: number, private ctx: CanvasRenderingContext2D) {
         this.createHandle();
     }
     private createHandle() {
-        this.context.fillStyle = '#ffffff';
-        this.context.strokeStyle = '#000000';
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.strokeStyle = '#000000';
 
         const NW = {
             x: this.coords.x - this.handleSize / 2,
@@ -271,28 +275,28 @@ export class ResizeHandle {
         switch (this.position) {
             
             case 'NW':
-                this.context.fillRect(NW.x, NW.y, this.handleSize, this.handleSize);
-                this.context.strokeRect(NW.x, NW.y, this.handleSize, this.handleSize);
+                this.ctx.fillRect(NW.x, NW.y, this.handleSize, this.handleSize);
+                this.ctx.strokeRect(NW.x, NW.y, this.handleSize, this.handleSize);
                 break;
             case 'NE':
-                this.context.fillRect(NE.x, NE.y, this.handleSize, this.handleSize);
-                this.context.strokeRect(NE.x, NE.y, this.handleSize, this.handleSize);
+                this.ctx.fillRect(NE.x, NE.y, this.handleSize, this.handleSize);
+                this.ctx.strokeRect(NE.x, NE.y, this.handleSize, this.handleSize);
                 break;
             case 'SW':
-                this.context.fillRect(SW.x, SW.y, this.handleSize, this.handleSize);
-                this.context.strokeRect(SW.x, SW.y, this.handleSize, this.handleSize);
+                this.ctx.fillRect(SW.x, SW.y, this.handleSize, this.handleSize);
+                this.ctx.strokeRect(SW.x, SW.y, this.handleSize, this.handleSize);
                 break;
             case 'SE':
-                this.context.fillRect(SE.x, SE.y, this.handleSize, this.handleSize);
-                this.context.strokeRect(SE.x, SE.y, this.handleSize, this.handleSize);
+                this.ctx.fillRect(SE.x, SE.y, this.handleSize, this.handleSize);
+                this.ctx.strokeRect(SE.x, SE.y, this.handleSize, this.handleSize);
                 break;
             case 'W':
-                this.context.fillRect(this.coords.x - this.handleSize, this.coords.y - this.handleSize / 2, this.handleSize, this.handleSize);
-                this.context.strokeRect(this.coords.x - this.handleSize, this.coords.y - this.handleSize / 2, this.handleSize, this.handleSize);
+                this.ctx.fillRect(this.coords.x - this.handleSize, this.coords.y - this.handleSize / 2, this.handleSize, this.handleSize);
+                this.ctx.strokeRect(this.coords.x - this.handleSize, this.coords.y - this.handleSize / 2, this.handleSize, this.handleSize);
                 break;
             case 'E':
-                this.context.fillRect(this.coords.x - this.handleSize, this.coords.y - this.handleSize / 2, this.handleSize, this.handleSize);
-                this.context.strokeRect(this.coords.x - this.width + this.handleSize, this.coords.y + this.height + this.handleSize / 2, this.handleSize, this.handleSize);
+                this.ctx.fillRect(this.coords.x - this.handleSize, this.coords.y - this.handleSize / 2, this.handleSize, this.handleSize);
+                this.ctx.strokeRect(this.coords.x - this.width + this.handleSize, this.coords.y + this.height + this.handleSize / 2, this.handleSize, this.handleSize);
                 break;
         }
     }
