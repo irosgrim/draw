@@ -2,6 +2,7 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    color: #333333;
 }
 
 ul {
@@ -13,12 +14,12 @@ ul {
 button {
     background-color: transparent;
     border: none;
-    padding: 0.5rem;
     width: 100%;
     &:focus, 
     &:active {
         outline: none;
     }
+
 }
 input[type="text"] {
     &:focus {
@@ -57,6 +58,9 @@ input[type="text"] {
     justify-content: center;
     li {
         width: 100%;
+        button {
+            padding: 0.5rem;
+        }
     }
 }
 .selected {
@@ -82,17 +86,55 @@ input[type="text"] {
     min-width: 200px;
     border: 1px solid #dadada;
     border-bottom-left-radius: 6px;
-    li {
+    &-item{
         padding: 0.5rem;
     }
-    li:not(:last-child) {
+    &-item:not(:last-child) {
         border-bottom: 1px solid #ececec;
+    }
+}
+.align-menu {
+    padding: 0;
+    margin: 0;
+    display: flex;
+    &-item {
+        button {
+            padding: 0.5rem;
+            background-color: transparent;
+            transition: 0.2s;
+            &:hover {
+                background-color: #f0f0f0;
+            }
+        }
     }
 }
 .property {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 0.5rem 1rem;
+    &-container {
+        padding: 0.5rem;
+    }
+}
+.p {
+    &-2 {
+        padding: 0.5rem;
+    }
+}
+
+.ml {
+    &-3 {
+        margin-left: 1rem;
+    }
+}
+.m-negative {
+    &-2 {
+        margin: -0.5rem;
+    }
+    &-3 {
+        margin: -1rem;
+    }
 }
 .property-toggle-btn {
     height: 1.8rem;
@@ -124,11 +166,18 @@ input[type="text"] {
     .color-code{
         border: none;
         line-height: 1rem;
-        border-bottom: 1px solid #dadada;
+        border-bottom: 1px solid rgba(218, 218, 218, 1);
         margin-left: 0.5rem;
         padding-bottom: 2px;
         max-width: 100px;
         font-size: 0.7rem;
+        transition: 0.2s;
+        &:hover {
+            border-bottom: 1px solid rgba(51, 51, 51, 1);
+        }
+        &:focus {
+            border-bottom: none;
+        }
     }
 }
 .property-input{
@@ -138,6 +187,11 @@ input[type="text"] {
     margin-left: 0.5rem;
     padding-bottom: 2px;
     max-width: 60px;
+    outline: 1px solid rgba(51, 51, 51, 0);
+    transition: 0.2s;
+    &:hover {
+        outline: 1px solid rgba(51, 51, 51, 1);
+    }
 }
 .color-btn {
     &-pink{
@@ -163,6 +217,12 @@ input[type="text"] {
     font-weight: bold;
 }
 .mb {
+    &-1 {
+        margin-bottom: 0.25rem;
+    }
+    &-2 {
+        margin-bottom: 0.5rem;
+    }
     &-3 {
         margin-bottom: 1rem;
     }

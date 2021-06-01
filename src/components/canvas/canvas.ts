@@ -13,8 +13,9 @@ export class Shape {
     public stroke: Stroke | null = null;
     public fill = '';
     public type: ShapeName | '' = '';
-    public _isMoving = false;
-    public _isSelected = false;
+    public rotation = 0;
+    private _isMoving = false;
+    private _isSelected = false;
     
     constructor(type: ShapeName, shapeProperties: {coords?: ShapeCoords, stroke?: Stroke, fill?: string}, copyShape?: {x: number, y: number, h: number, w: number}) {
         this.id = uid(12);
@@ -136,9 +137,18 @@ export class Shape {
     }
 
     public drawRectangle(context: CanvasRenderingContext2D) {
+        context.save();
+        // context.translate(this.x, this.y);
+        context.rotate((Math.PI / 180) * this.rotation);
+        context.translate(50, -800);
+        context.shadowColor = "rgba(0, 0, 0, 0.2)";
+        context.shadowBlur    = 20;
+        context.shadowOffsetX = 30;
+        context.shadowOffsetY = 30;
         if(this.fill) {
             context.fillStyle = this.fill;
             context.fillRect(this.x, this.y, this.width, this.height);
+            
         }
         if(this.stroke) {
             context.setLineDash([]);
@@ -146,10 +156,12 @@ export class Shape {
             context.lineWidth = this.stroke.width;
             context.strokeRect(this.x, this.y, this.width, this.height);
         }
+
         if(this.isSelected) {
             this.drawResizeHandles(context);
         }
-        context.closePath();
+        context.restore();
+
     }
 
     public drawLine(context: CanvasRenderingContext2D) {
@@ -199,6 +211,7 @@ export class Shape {
             context.textAlign = "center";
             context.font = "12px Arial";
             context.fillText(text, this.x + this.width / 2, this.y + this.height + 16 + infoBoxH / 3.6);
+
     }
 
 }

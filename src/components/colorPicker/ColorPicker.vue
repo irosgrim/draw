@@ -13,7 +13,7 @@ import { hexToRGBA } from '@/helpers/string';
 
 @Component
 export default class ColorPicker extends Vue {
-    @Prop() public color!: string;
+    @Prop({default: 'rgba(248, 18, 18, 0.452)'}) public color!: string;
     private hexColor = '';
 
     private mounted() {

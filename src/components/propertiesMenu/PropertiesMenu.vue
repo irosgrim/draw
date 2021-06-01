@@ -1,9 +1,35 @@
 <template>
     <ul class="properties-menu">
-        <li class="opacity-75" v-if="getId">
-            <div class="d-flex mb-3">
+        <li class="properties-menu-item">
+            <div>Align</div>
+            <ul class="align-menu disabled">
+                <li class="align-menu-item">
+                    <button>
+                        <img src="@/assets/icons/align_left.svg" alt="align bottom" width="16" height="16">
+                    </button>
+                </li>
+                <li class="align-menu-item">
+                    <button>
+                        <img src="@/assets/icons/align_top.svg" alt="align top" width="16" height="16">
+                    </button>
+                </li>
+                <li class="align-menu-item">
+                    <button>
+                        <img src="@/assets/icons/align_bottom.svg" alt="align bottom" width="16" height="16">
+                    </button>
+                </li>
+                <li class="align-menu-item">
+                    <button>
+                        <img src="@/assets/icons/align_right.svg" alt="align bottom" width="16" height="16">
+                    </button>
+                </li>
+                
+            </ul>
+        </li>
+        <li class="opacity-75 properties-menu-item" v-if="getId">
+            <div class="d-flex mb-2">
                 <div class="d-flex align-items-center">
-                    <label for="X">X:</label>
+                    <label for="X">X </label>
                     <input
                         class="property-input"
                         :value="getX" 
@@ -14,7 +40,7 @@
                     >
                 </div>
                 <div class="d-flex align-items-center">
-                    <label for="Y">Y:</label>
+                    <label for="Y">Y </label>
                     <input 
                         class="property-input"
                         :value="getY" 
@@ -27,7 +53,7 @@
             </div>
             <div class="d-flex">
                 <div class="d-flex align-items-center">
-                    <label for="width">W:</label>
+                    <label for="width">W </label>
                     <input 
                         class="property-input"
                         :value="getWidth" 
@@ -38,7 +64,7 @@
                     >
                 </div>
                 <div class="d-flex align-items-center">
-                    <label for="height">H:</label>
+                    <label for="height">H </label>
                     <input 
                         class="property-input"
                         :value="getHeight" 
@@ -49,16 +75,24 @@
                     >
                 </div>
             </div>
+            <div class="mt-3">
+                <label for="rotation">Rotation</label>
+                    <input 
+                        class="property-input"
+                        type="number" 
+                        name="rotation"
+                        value="0"
+                        id="rotation"
+                    />
+            </div>
         </li>
-        <li v-if="getId">
-            <div class="property">
+        <li v-if="getId" class="properties-menu-item">
+            <button type="button" @click="toggleFill" class="property m-negative-2">
                 <div class="bold">Fill</div>
                 <div>
-                    <button type="button" @click="toggleFill" class="property-toggle-btn"> 
-                        {{ fill.showProperties ? '-' : '+'}}
-                    </button>
+                    {{ fill.showProperties ? '-' : '+'}}
                 </div>
-            </div>
+            </button>
             <div class="property-container" v-if="fill.showProperties">
                 <ColorPicker
                     :color="getFill"
@@ -67,15 +101,13 @@
 
             </div>
         </li>
-        <li v-if="getId">
-            <div class="property">
+        <li v-if="getId" class="properties-menu-item">
+            <button type="button" @click="toggleStroke" class="property m-negative-2">
                 <div class="bold">Stroke</div>
                 <div>
-                    <button type="button" @click="toggleStroke" class="property-toggle-btn">
-                        {{ stroke.showProperties ? '-' : '+'}}
-                    </button>
+                    {{ stroke.showProperties ? '-' : '+'}}
                 </div>
-            </div>
+            </button>
             <div class="property-container" v-if="stroke.showProperties">
                 <ColorPicker 
                     :color="getStroke ? getStroke.style : stroke.color"
@@ -83,8 +115,55 @@
                 />
             </div>
         </li>
-        <li>
-             <div class="property">
+        <li class="properties-menu-item">
+             <button type="button" @click="toggleShadow" class="property m-negative-2">
+                <div class="bold">Shadow</div>
+                <div>
+                    {{ shadow.showProperties ? '-' : '+'}}
+                </div>
+            </button>
+            <div class="property-container" v-if="shadow.showProperties">
+                 <div class="d-flex mb-3">
+                    <div>
+                        <div class="d-flex align-items-center mb-2">
+                            <label for="X">X </label>
+                            <input
+                                class="property-input"
+                                type="number" 
+                                name="blurX" 
+                                id="blurX"
+                            >
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <label for="Y">Y </label>
+                            <input 
+                                class="property-input"
+                                type="number" 
+                                name="blurY" 
+                                id="blurY"
+                            >
+                        </div>
+                    </div>
+                    <div class="ml-3">
+                        <div class="d-flex align-items-center">
+                            <label for="X">Blur </label>
+                            <input
+                                class="property-input"
+                                :value="getX" 
+                                type="number" 
+                                name="X" 
+                                id="X"
+                                @keyup.enter="updateProperty('X', $event.target.value)"
+                            >
+                        </div>
+                    </div>
+                </div>
+                <ColorPicker 
+                />
+            </div>
+        </li>
+        <li class="properties-menu-item">
+             <div class="property m-negative-2">
                 <div class="bold">Canvas background</div>
             </div>
             <div class="property-container">
@@ -94,15 +173,13 @@
                 />
             </div>
         </li>
-        <li>
-            <div class="property">
+        <li class="properties-menu-item">
+            <button type="button" @click="$emit('export-png')"  class="property m-negative-2">
                 <div class="bold">Export</div>
                 <div>
-                    <button type="button" @click="$emit('export-png')" class="property-toggle-btn"> 
-                        ...
-                    </button>
+                    ...
                 </div>
-            </div>
+            </button>
         </li>
     </ul>
 </template>
@@ -147,6 +224,9 @@ export default class PropertiesMenu extends Vue {
         showProperties: true,
         color: 'rgba(255, 255, 255, 1)',
     }
+    public shadow = {
+        showProperties: false,
+    }
 
     public toggleStroke() {
         this.stroke.showProperties = !this.stroke.showProperties;
@@ -154,6 +234,10 @@ export default class PropertiesMenu extends Vue {
 
     public toggleFill() {
         this.fill.showProperties = !this.fill.showProperties;
+    }
+
+    public toggleShadow() {
+        this.shadow.showProperties = !this.shadow.showProperties;
     }
 
     public handleColorChanged(color: string, property: Properties) {

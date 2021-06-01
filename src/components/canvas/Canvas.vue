@@ -117,6 +117,10 @@ export default class Canvas extends Vue {
 
     public mounted(): void {
         this.setupCanvas();
+        const rect = new Shape('RECTANGLE', {coords: {start: { x: 600, y: 100}, end: {x: 800, y: 300}}, fill: 'rgba(0, 2, 100, 0.7)'});
+        this.shapes[rect.id] = rect;
+        this.shapes[rect.id].rotation = 45;
+        this.draw();
     }
     public setupCanvas(): void {
         window.addEventListener('resize', this.onResize);
