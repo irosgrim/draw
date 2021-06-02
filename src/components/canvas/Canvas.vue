@@ -3,7 +3,6 @@
 </template>
 
 <script lang="ts">
-import { uid } from 'uid';
 import { Dictionary, Shadow, ShapeName, Stroke } from '@/Types/types';
 import { Shape } from './canvas';
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
@@ -13,6 +12,7 @@ import {
 } from 'vuex-class'
 import { Color, PropertiesStore } from '@/store/properties/types';
 import { Tool, ToolbarStore } from '@/store/toolbar/types';
+import { degreesToRadians, getMouseLocal } from '@/helpers/geometry';
 
 const properties = namespace('properties');
 const toolbar = namespace('toolbar');
@@ -255,6 +255,7 @@ export default class Canvas extends Vue {
             if(this.selectedTool === 'SELECT') {
                 for (const id in this.shapes) {
                     const shape = this.shapes[id];
+                    const localMouse = getMouseLocal(mouseX, mouseY, 0, 0, 1, 1, degreesToRadians(0))
                     if(shape.isSelected && shape.type === 'LINE') {
                         shape.x += dx;
                         shape.y += dy;
@@ -510,7 +511,7 @@ export default class Canvas extends Vue {
     }
 
     public clear(): void {
-        const ctx = this.canvas?.getContext('2d');
+        this.ctx!.setTransform(1, 0, 0, 1, 0, 0);
         this.ctx!.fillStyle = this.getCanvas;
         this.ctx!.fillRect(0, 0, this.canvas!.width, this.canvas!.height)
     }
@@ -520,7 +521,9 @@ export default class Canvas extends Vue {
         console.log('context menu ', {clientX: e.clientX, clientY: e.clientY});
         this.$emit('context-menu', {visible: true, mouseCoords: {x: e.clientX, y: e.clientY}});
     }
+
 }
+
 
 
 </script>

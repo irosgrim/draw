@@ -28,8 +28,39 @@ export const mouseIsInsideRectangle = (
     h: number,
     w: number
     ): boolean => {
-    const mX = mouseX - canvasOffsetX;
-    const mY = mouseY - canvasOffsetY;
+    const mX = mouseX ;
+    const mY = mouseY ;
     
     return (mX > rectangleX && mX < rectangleX + w && mY > rectangleY && mY < rectangleY + h)
 }
+
+export const setTransform = (ctx: CanvasRenderingContext2D, x: number, y: number, scaleX: number, scaleY: number, rotation: number) => {
+    const xDx = Math.cos(rotation);
+    const xDy = Math.sin(rotation);
+    ctx.setTransform(xDx * scaleX, xDy * scaleX, -xDy * scaleY, xDx * scaleY, x, y);
+}
+
+export const getMouseLocal = (mouseX: number, mouseY: number, x: number, y: number, scaleX: number, scaleY: number, rotation: number) => {
+    const xDx = Math.cos(rotation);
+    const xDy = Math.sin(rotation);
+
+    const cross = xDx * scaleX * xDx * scaleY - xDy * scaleX * (-xDy) * scaleY;
+
+    const ixDx = (xDx * scaleY) / cross;
+    const ixDy = (-xDy * scaleX) / cross;
+    const iyDx = (xDy * scaleY) / cross;
+    const iyDy = (xDx * scaleX) / cross;
+
+    mouseX -= x;
+    mouseY -= y;
+
+    const localMouseX = mouseX * ixDx + mouseY * iyDx;
+    const localMouseY = mouseX * ixDy + mouseY * iyDy;
+
+    return {
+        x : localMouseX,
+        y: localMouseY,
+    }
+}
+
+export const degreesToRadians = (degrees: number) => (Math.PI * degrees) / 180;
