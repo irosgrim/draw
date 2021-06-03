@@ -169,7 +169,9 @@ export class Shape {
             ctx.setLineDash([]);
             ctx.strokeStyle = this.stroke.style;
             ctx.lineWidth = this.stroke.width;
-            ctx.strokeRect(this.x, this.y, this.width, this.height);
+            this.roundedRectangle(ctx, this.x, this.y, this.width, this.height, this.radius || [0,0,0,0]);
+            // ctx.strokeRect(this.x, this.y, this.width, this.height);
+            ctx.stroke();
         }
         ctx.restore();
         if(this.isSelected) {

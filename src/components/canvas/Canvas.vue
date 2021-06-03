@@ -68,7 +68,6 @@ export default class Canvas extends Vue {
     private radiusChanged(radius:  number[] | null) {
         if(this.getShapeId) {
             if(!this.shapes[this.getShapeId].radius) {
-                console.log(radius);
                 this.shapes[this.getShapeId].radius = [];
             }
             if(radius) {

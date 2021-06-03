@@ -1,7 +1,7 @@
 <template>
     <ul class="properties-menu">
         <li class="properties-menu-item">
-            <div>Align</div>
+            <div class="bold">Align</div>
             <ul class="align-menu disabled">
                 <li class="align-menu-item">
                     <button>
@@ -29,9 +29,9 @@
         <li class="opacity-75 properties-menu-item" v-if="getId">
             <div class="d-flex mb-2">
                 <div class="d-flex align-items-center">
-                    <label for="X">X </label>
+                    <label for="X" class="bold">X </label>
                     <input
-                        class="property-input"
+                        class="property-input property-input-s"
                         :value="getShapeProperties.x" 
                         type="number" 
                         name="X" 
@@ -40,9 +40,9 @@
                     >
                 </div>
                 <div class="d-flex align-items-center">
-                    <label for="Y">Y </label>
+                    <label for="Y" class="bold">Y </label>
                     <input 
-                        class="property-input"
+                        class="property-input property-input-s"
                         :value="getShapeProperties.y" 
                         type="number" 
                         name="Y" 
@@ -53,9 +53,9 @@
             </div>
             <div class="d-flex">
                 <div class="d-flex align-items-center">
-                    <label for="width">W </label>
+                    <label for="width" class="bold">W </label>
                     <input 
-                        class="property-input"
+                        class="property-input property-input-s"
                         :value="getShapeProperties.width" 
                         type="number" 
                         name="width" 
@@ -64,9 +64,9 @@
                     >
                 </div>
                 <div class="d-flex align-items-center">
-                    <label for="height">H </label>
+                    <label for="height" class="bold">H </label>
                     <input 
-                        class="property-input"
+                        class="property-input property-input-s"
                         :value="getShapeProperties.height" 
                         type="number" 
                         name="height" 
@@ -76,9 +76,9 @@
                 </div>
             </div>
             <div class="mt-3">
-                <label for="rotation">Rotation</label>
+                <label for="rotation" class="bold">Rotation</label>
                     <input 
-                        class="property-input"
+                        class="property-input property-input-xs"
                         :value="getShapeProperties.rotation"
                         type="number" 
                         name="rotation"
@@ -89,47 +89,50 @@
             <div v-if="getRadius">
                 <div class="bold">Radius:</div>
                 <div class="property-container">
-                    <div>
-                        <input 
-                            class="property-input"
-                            type="number" 
-                            name="radiusNW"
-                            :value="getRadius.NW"
-                            id="radiusNW"
-                            @keyup.enter="$store.commit('properties/setRadius', {corner: 'NW', value: $event.target.value})"
-                        />
-                        <input 
-                            class="property-input"
-                            type="number" 
-                            name="radiusNE"
-                            :value="getRadius.NE"
-                            id="radiusNE"
-                            @keyup.enter="$store.commit('properties/setRadius', {corner: 'NE', value: $event.target.value})"
-                        />
-                    </div>
-                    <div>
-                        <input 
-                            class="property-input"
-                            type="number" 
-                            name="radiusSW"
-                            :value="getRadius.SW"
-                            id="radiusSW"
-                            @keyup.enter="$store.commit('properties/setRadius', {corner: 'SW', value: $event.target.value})"
-                        />
-                        <input 
-                            class="property-input"
-                            type="number" 
-                            name="radiusSE"
-                            :value="getRadius.SE"
-                            id="radiusSE"
-                            @keyup.enter="$store.commit('properties/setRadius', {corner: 'SE', value: $event.target.value})"
-                        />
+                    <div class="w-50">
+                        <div class="mb-2 d-flex">
+                            <input 
+                                class="property-input property-input-xs"
+                                type="number" 
+                                name="radiusNW"
+                                :value="getRadius.NW"
+                                id="radiusNW"
+                                @keyup.enter="$store.commit('properties/setRadius', {corner: 'NW', value: $event.target.value})"
+                            />
+                            <input 
+                                class="property-input property-input-xs"
+                                type="number" 
+                                name="radiusNE"
+                                :value="getRadius.NE"
+                                id="radiusNE"
+                                @keyup.enter="$store.commit('properties/setRadius', {corner: 'NE', value: $event.target.value})"
+                            />
+                        </div>
+                        <div class="d-flex">
+                            <input 
+                                class="property-input property-input-xs"
+                                type="number" 
+                                name="radiusSW"
+                                :value="getRadius.SW"
+                                id="radiusSW"
+                                @keyup.enter="$store.commit('properties/setRadius', {corner: 'SW', value: $event.target.value})"
+                            />
+                            <input 
+                                class="property-input property-input-xs"
+
+                                type="number" 
+                                name="radiusSE"
+                                :value="getRadius.SE"
+                                id="radiusSE"
+                                @keyup.enter="$store.commit('properties/setRadius', {corner: 'SE', value: $event.target.value})"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
         </li>
         <li v-if="getId" class="properties-menu-item">
-            <button type="button" @click="toggleFill" class="property m-negative-2">
+            <button type="button" @click="toggleFill" class="property">
                 <div class="bold">Fill</div>
                 <div>
                     {{ fill.showProperties ? '-' : '+'}}
@@ -144,36 +147,34 @@
             </div>
         </li>
         <li v-if="getId" class="properties-menu-item">
-            <button type="button" @click="toggleStroke" class="property m-negative-2">
+            <button type="button" @click="toggleStroke" class="property">
                 <div class="bold">Stroke</div>
                 <div>
-                    {{ stroke.showProperties ? '-' : '+'}}
+                    {{ stroke.showProperties && getStroke ? '-' : '+'}}
                 </div>
             </button>
-            {{ getShapeProperties.stroke }}
-            <div class="property-container" v-if="getStroke">
+            <div class="property-container" v-if="stroke.showProperties && getStroke">
                 <ColorPicker
                     v-if="getStroke"
-                    :color="getStroke.color"
-                    @color-changed="updateProperty('stroke',  { width: 2, style: $event.target.value})"
+                    :color="getStroke.style"
+                    @color-changed="updateProperty('stroke',  { width: 2, style: $event})"
                 />
             </div>
         </li>
         <li v-if="getId" class="properties-menu-item">
-             <button type="button" @click="toggleShadow" class="property m-negative-2">
+             <button type="button" @click="toggleShadow" class="property">
                 <div class="bold">Shadow</div>
                 <div>
-                    <button v-if="getShadow.color" @click="$store.commit('properties/removeShadow')">-</button>
-                    <div v-else>+</div>
+                    {{ shadow.showProperties ? '-' : '+'}}
                 </div>
             </button>
-            <div class="property-container" v-if="getShadow.color !== ''">
+            <div class="property-container" v-if="shadow.showProperties && getShadow.color !== ''">
                  <div class="d-flex mb-3">
                     <div>
                         <div class="d-flex align-items-center mb-2">
                             <label for="shadowX">X </label>
                             <input
-                                class="property-input"
+                                class="property-input property-input-xs"
                                 type="number" 
                                 name="shadowX"
                                 :value="getShapeProperties.shadowX"
@@ -184,7 +185,7 @@
                         <div class="d-flex align-items-center">
                             <label for="shadowY">Y </label>
                             <input 
-                                class="property-input"
+                                class="property-input property-input-xs"
                                 type="number" 
                                 name="shadowY"
                                 :value="getShapeProperties.shadowY"
@@ -197,7 +198,7 @@
                         <div class="d-flex align-items-center">
                             <label for="blur">Blur </label>
                             <input
-                                class="property-input"
+                                class="property-input property-input-xs"
                                 :value="getShapeProperties.shadowBlur" 
                                 type="number" 
                                 name="blur" 
@@ -215,7 +216,7 @@
             </div>
         </li>
         <li class="properties-menu-item">
-             <div class="property m-negative-2">
+             <div class="property">
                 <div class="bold">Canvas background</div>
             </div>
             <div class="property-container">
@@ -226,7 +227,7 @@
             </div>
         </li>
         <li class="properties-menu-item">
-            <button type="button" @click="$store.commit('properties/saveCanvas')" class="property m-negative-2">
+            <button type="button" @click="$store.commit('properties/saveCanvas')" class="property">
                 <div class="bold">Export</div>
                 <div>
                     ...
@@ -291,36 +292,31 @@ export default class PropertiesMenu extends Vue {
     public async toggleStroke() {
         this.stroke.showProperties = !this.stroke.showProperties;
         if(this.stroke.showProperties) {
-            console.log('one')
-            await this.$store.dispatch('properties/setDefaultStroke');
-            console.log('two')
-            return;
+            await this.$store.commit('properties/setDefaultStroke');
         } else {
-            await this.$store.dispatch('properties/removeStroke');
-            this.stroke.showProperties = !this.stroke.showProperties;
+            await this.$store.commit('properties/removeStroke');
         }
-        
-
     }
 
     public toggleFill() {
         this.fill.showProperties = !this.fill.showProperties;
+        if(this.fill.showProperties) {
+            console.log('one')
+            this.$store.commit('properties/setFillOpacity', 1);
+        } else {
+            console.log('two')
+
+            this.$store.commit('properties/setFillOpacity', 0);
+        }
     }
 
     public toggleShadow() {
-        if(this.getId !== '' && this.getShapeProperties.shadowColor !== '') {
-            this.shadow.showProperties = true;
-            return;
-        }
-        if(this.getId !== '' && this.getShapeProperties.shadowColor === '') {
-
+        this.shadow.showProperties = !this.shadow.showProperties;
+        if(this.shadow.showProperties) {
             this.$store.commit('properties/setDefaultShadow');
-            this.shadow.showProperties = true;
-            return;
-        } 
-        this.shadow.showProperties = false;
-        this.$store.dispatch('properties/removeShadow');
-        
+        } else {
+            this.$store.commit('properties/removeShadow');
+        }
     }
 
     public handleColorChanged(color: string, property: Properties) {
@@ -334,7 +330,6 @@ export default class PropertiesMenu extends Vue {
 
     public updateProperty(property: string, value: string) {
         this.$store.dispatch('properties/setCurrentShape', {[property]: value });
-        // this.$emit('update-properties');
     }
 }
 </script>

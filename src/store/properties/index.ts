@@ -1,5 +1,5 @@
 import { Shape } from '@/components/canvas/shape';
-import { rgbaToHEX } from '@/helpers/string';
+import { hexToRGBA, rgbaToHEX } from '@/helpers/string';
 import { Coords, Dictionary, Shadow, Stroke } from '@/Types/types';
 import { Module } from 'vuex';
 import { GetterTree } from 'vuex';
@@ -203,6 +203,11 @@ export const mutations: MutationTree<PropertiesStore> = {
     setFill(state, color: string) {
         state.fill = color;
     },
+    setFillOpacity(state, opacity: number) {
+        const currentFill = rgbaToHEX(state.fill);
+        console.log(hexToRGBA(currentFill.color, opacity));
+        state.fill = hexToRGBA(currentFill.color, opacity);
+    },
     setCanvas(state, color: string) {
         state.canvas = color;
     },
@@ -216,7 +221,6 @@ export const mutations: MutationTree<PropertiesStore> = {
         state.stroke = null;
     },
     resetProperties(state) {
-        console.log('getting here')
         state.id = defaultProperties.id;
         state.x = defaultProperties.x;
         state.y = defaultProperties.y;

@@ -2,7 +2,7 @@
     <div class="colors">
         <input type="color" :value="colorToHex" class="color-picker" @change="validateColor($event.target.value)">
         <input type="text" :value="colorToHex" class="color-code" @keyup.enter="validateColor($event.target.value)" @blur="validateColor($event.target.value)">
-        <input type="text" :value="formattedOpacity" class="property-input" @keyup.enter="validateOpacity($event.target.value)" @blur="validateOpacity($event.target.value)">
+        <input type="number" :value="formattedOpacity" class="property-input property-input-xs" @keyup.enter="validateOpacity($event.target.value)" @blur="validateOpacity($event.target.value)">
     </div>
 </template>
 

@@ -1,3 +1,12 @@
+body {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.75rem;
+    color: #2c3e50;
+}
+input, textarea, button {
+    font-family: inherit; 
+    font-size: inherit;
+}
 * {
     box-sizing: border-box;
     margin: 0;
@@ -78,7 +87,7 @@ input[type="text"] {
 
 .properties-menu {
     position: absolute;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     background-color: #ffffff;
     z-index: 2;
     right: 0;
@@ -112,7 +121,6 @@ input[type="text"] {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 1rem;
     &-container {
         padding: 0.5rem;
     }
@@ -183,12 +191,16 @@ input[type="text"] {
 .property-input{
     border: none;
     font-size: 0.7rem;
-    line-height: 1rem;
     margin-left: 0.5rem;
     padding-bottom: 2px;
-    max-width: 60px;
     outline: 1px solid rgba(51, 51, 51, 0);
     transition: 0.2s;
+    &-xs {
+        max-width: 40px;
+    }
+    &-s {
+        max-width: 60px;
+    }
     &:hover {
         outline: 1px solid rgba(51, 51, 51, 1);
     }
