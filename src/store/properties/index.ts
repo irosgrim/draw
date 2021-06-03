@@ -1,4 +1,5 @@
 import { Shape } from '@/components/canvas/shape';
+import { rgbaToHEX } from '@/helpers/string';
 import { Coords, Dictionary, Shadow, Stroke } from '@/Types/types';
 import { Module } from 'vuex';
 import { GetterTree } from 'vuex';
@@ -18,7 +19,7 @@ const defaultProperties = {
     rotation: 0,
     radius: null,
     stroke: null,
-    fill: 'rgba(255, 192, 203, 1)',
+    fill: 'rgba(149, 160, 178, 1)',
     shadowX: 0,
     shadowY: 0,
     shadowBlur: 0,
@@ -26,8 +27,13 @@ const defaultProperties = {
     canvas: 'rgba(255, 255, 255, 1)',
 }
 
+const defaultStroke = {
+    width: 2,
+    style: 'rgba(0, 0, 0, 1)'
+}
+
 const defaultShadow = {
-    color: 'rgba(255, 24, 42, 0.8)',
+    color: 'rgba(41, 41, 41, 0.45)',
     x: 10,
     y: 10,
     blur: 20,
@@ -149,6 +155,9 @@ export const mutations: MutationTree<PropertiesStore> = {
             state.shadowBlur = defaultShadow.blur;
             state.shadowColor = defaultShadow.color;
     },
+    setDefaultStroke(state) {
+        state.stroke = defaultStroke;
+    },
     setCurrentShape(state, shapeProperties: {
         id:string, 
         x: string, 
@@ -203,7 +212,11 @@ export const mutations: MutationTree<PropertiesStore> = {
         state.shadowY = 0;
         state.shadowColor = '';
     },
+    removeStroke(state) {
+        state.stroke = null;
+    },
     resetProperties(state) {
+        console.log('getting here')
         state.id = defaultProperties.id;
         state.x = defaultProperties.x;
         state.y = defaultProperties.y;
@@ -236,10 +249,10 @@ export const mutations: MutationTree<PropertiesStore> = {
                 case 'NE':
                     state.radius.splice(1, 1, value);
                     break;
-                case 'SW':
+                case 'SE':
                     state.radius.splice(2, 1, value);
                     break;
-                case 'SE':
+                case 'SW':
                     state.radius.splice(3, 1, value);
                     break;
             }
@@ -257,6 +270,12 @@ export const actions: ActionTree<PropertiesStore, RootState> = {
     async setCurrentShape({ commit }, shapeProperties: {id?:string, x?: number, y?: number, fill?: string, stroke?: Stroke | null, shadow?: Shadow | null}) {
         await commit('setCurrentShape', shapeProperties);
     },
+    async setDefaultStroke({ commit }) {
+       await commit('setDefaultStroke');
+    },
+    async removeStroke({ commit }) {
+        await commit('removeStroke');
+     },
 };
 
 export const properties: Module<PropertiesStore, RootState> = {

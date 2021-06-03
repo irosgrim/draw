@@ -111,18 +111,18 @@
                         <input 
                             class="property-input"
                             type="number" 
-                            name="radiusSE"
-                            :value="getRadius.SE"
-                            id="radiusSE"
-                            @keyup.enter="$store.commit('properties/setRadius', {corner: 'SE', value: $event.target.value})"
-                        />
-                        <input 
-                            class="property-input"
-                            type="number" 
                             name="radiusSW"
                             :value="getRadius.SW"
                             id="radiusSW"
                             @keyup.enter="$store.commit('properties/setRadius', {corner: 'SW', value: $event.target.value})"
+                        />
+                        <input 
+                            class="property-input"
+                            type="number" 
+                            name="radiusSE"
+                            :value="getRadius.SE"
+                            id="radiusSE"
+                            @keyup.enter="$store.commit('properties/setRadius', {corner: 'SE', value: $event.target.value})"
                         />
                     </div>
                 </div>
@@ -150,10 +150,12 @@
                     {{ stroke.showProperties ? '-' : '+'}}
                 </div>
             </button>
+            {{ getShapeProperties.stroke }}
             <div class="property-container" v-if="getStroke">
-                <ColorPicker 
-                    :color="getStroke ? getStroke.style : stroke.color"
-                    @color-changed="updateProperty('stroke',  { width: 1, style: $event})"
+                <ColorPicker
+                    v-if="getStroke"
+                    :color="getStroke.color"
+                    @color-changed="updateProperty('stroke',  { width: 2, style: $event.target.value})"
                 />
             </div>
         </li>
@@ -268,15 +270,13 @@ export default class PropertiesMenu extends Vue {
 
     public stroke = {
         showProperties: false,
-        color: 'rgba(255, 192, 203, 1)',
     }
     public fill = {
         showProperties: false,
-        color: 'rgba(255, 192, 203, 1)',
     }
     public canvas = {
-        showProperties: true,
         color: 'rgba(255, 255, 255, 1)',
+        showProperties: true,
     }
     public shadow = {
         showProperties: false,
@@ -288,8 +288,19 @@ export default class PropertiesMenu extends Vue {
         
     }
 
-    public toggleStroke() {
+    public async toggleStroke() {
         this.stroke.showProperties = !this.stroke.showProperties;
+        if(this.stroke.showProperties) {
+            console.log('one')
+            await this.$store.dispatch('properties/setDefaultStroke');
+            console.log('two')
+            return;
+        } else {
+            await this.$store.dispatch('properties/removeStroke');
+            this.stroke.showProperties = !this.stroke.showProperties;
+        }
+        
+
     }
 
     public toggleFill() {
@@ -314,18 +325,6 @@ export default class PropertiesMenu extends Vue {
 
     public handleColorChanged(color: string, property: Properties) {
         switch(property) {
-            // case 'STROKE':
-            //     this.stroke.color = color;
-            //     this.$store.commit('properties/setStroke', {style: color, width: 1})
-            //     break;
-            // case 'FILL':
-            //     this.fill.color = color;
-            //     this.$store.commit('properties/setFill', color)
-            //     break;
-            // case 'SHADOW':
-            //     // this.fill.color = color;
-            //     this.$store.commit('properties/setShadowProperty', { property: 'shadowColor', value: color })
-            //     break;
             case 'CANVAS':
                 this.canvas.color = color;
                 this.$store.commit('properties/setCanvas', color)

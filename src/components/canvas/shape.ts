@@ -156,7 +156,7 @@ export class Shape {
         // const getMouseLocal()
         if(this.fill) {
             ctx.fillStyle = this.fill;
-            this.roundedRectangle(ctx, this.x, this.y, this.width, this.height, this.radius);
+            this.roundedRectangle(ctx, this.x, this.y, this.width, this.height, this.radius || [0,0,0,0]);
             ctx.fill();
         }
 
