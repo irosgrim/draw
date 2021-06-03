@@ -107,13 +107,18 @@ export class Shape {
 
     public drawShape(ctx: CanvasRenderingContext2D) {
         ctx.save();
+        const horisontalCenter = this.x + ( this.width / 2);
+        const verticalCenter = this.y + (this.height / 2);
+        
+        ctx.translate(horisontalCenter, verticalCenter);
+        ctx.rotate(degreesToRadians(this.rotation));
+        ctx.translate(- horisontalCenter, - verticalCenter);
         if(this.shadow) {
             this.applyShadow(ctx);
         }
         switch(this.type) {
             case 'RECTANGLE':
                 this.drawRectangle(ctx);
-
                 break;
             case 'CIRCLE':
                 this.drawCircle(ctx)
@@ -138,7 +143,7 @@ export class Shape {
             ctx.ellipse(this.x + this.width/2, this.y + this.height/2, this.width/2, this.height/2, 0, 0, 2*Math.PI);
             ctx.stroke();
         }
-        // ctx.restore();
+        ctx.restore();
 
         if(this.isSelected) {
             this.drawResizeHandles(ctx);
@@ -149,7 +154,7 @@ export class Shape {
 
     public drawRectangle(ctx: CanvasRenderingContext2D) {
         // const getMouseLocal()
-        if(this.fill && this.radius) {
+        if(this.fill) {
             ctx.fillStyle = this.fill;
             this.roundedRectangle(ctx, this.x, this.y, this.width, this.height, this.radius);
             ctx.fill();

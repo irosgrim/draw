@@ -15,6 +15,8 @@ const defaultProperties = {
     y: 0,
     width: 0,
     height: 0,
+    rotation: 0,
+    radius: null,
     stroke: null,
     fill: 'rgba(255, 192, 203, 1)',
     shadowX: 0,
@@ -37,6 +39,7 @@ export const propertiesStore: PropertiesStore = {
     y: 0,
     width: 0,
     height: 0,
+    rotation: 0,
     radius: [5, 5, 5, 5],
     stroke: null,
     fill: 'rgba(255, 192, 203, 1)',
@@ -63,6 +66,9 @@ export const getters: GetterTree<PropertiesStore, RootState> = {
     },
     getHeight(state) {
         return state.height;
+    },
+    getRotation( state ): number {
+        return state.rotation;
     },
     getRadius(state): any | null {
         if(state.radius) {
@@ -108,6 +114,7 @@ export const getters: GetterTree<PropertiesStore, RootState> = {
             shadowY: state.shadowY,
             shadowBlur: state.shadowBlur,
             shadowColor: state.shadowColor,
+            rotation: state.rotation,
         }
     },
     getSaveCanvas(state) {
@@ -154,6 +161,7 @@ export const mutations: MutationTree<PropertiesStore> = {
         shadowY: string,
         shadowBlur: string,
         shadowColor: string,
+        rotation: string,
         radius: number[] | null,
     }) {
         state.id = shapeProperties.id || state.id;
@@ -167,7 +175,8 @@ export const mutations: MutationTree<PropertiesStore> = {
         state.shadowY = parseInt(shapeProperties.shadowY, 10) || state.shadowY;
         state.shadowBlur = parseInt(shapeProperties.shadowBlur, 10) || state.shadowBlur;
         state.shadowColor = shapeProperties.shadowColor || state.shadowColor;
-        state.radius = shapeProperties.radius;
+        state.rotation = shapeProperties.rotation !== undefined ? parseFloat(shapeProperties.rotation) : state.rotation;
+        state.radius = shapeProperties.radius || state.radius;
     },
     setShadow(state, shadowProperty: {property: 'shadowX' | 'shadowY' | 'shadowBlur' | 'shadowColor', value: string | number}) {
         // @ts-ignore
@@ -204,12 +213,17 @@ export const mutations: MutationTree<PropertiesStore> = {
         state.shadowColor = defaultProperties.shadowColor;
         state.shadowX = defaultProperties.shadowX;
         state.shadowY = defaultProperties.shadowY;
+        state.radius = defaultProperties.radius;
+        state.rotation = defaultProperties.rotation;
     },
     setX(state, x: number) {
         state.x = x;
     },
     setY(state, y: number) {
         state.y = y;
+    },
+    setRotation( state, rotation: string ) {
+        state.rotation = parseFloat(rotation);
     },
     setRadius(state, payload: {corner: string, value: string}) {
         console.log(payload)

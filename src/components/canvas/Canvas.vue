@@ -33,6 +33,7 @@ export default class Canvas extends Vue {
     @properties.Getter('getShadow') public getShadow!: Shadow;
     @properties.Getter('getShapeProperties') public getShapeProperties!: any;
     @properties.Getter('getSaveCanvas') public getSaveCanvas!: boolean;
+    @properties.Getter('getRotation') public getRotation!: number;
     @properties.Getter('getRadius') public getRadius!: number[] | null;
 
 
@@ -54,6 +55,14 @@ export default class Canvas extends Vue {
     private selectedShapes: string[] = [];
     private shapes: Dictionary<Shape> = {};
     private copyShapes: string[] = [];
+
+    @Watch('getRotation')
+    private rotationChanged(rotation: number) {
+        if(this.getShapeId) {
+            this.shapes[this.getShapeId].rotation = rotation;
+            this.draw();
+        }
+    }
 
     @Watch('getRadius')
     private radiusChanged(radius:  any | null) {
@@ -167,6 +176,7 @@ export default class Canvas extends Vue {
                         shadowBlur: shape.shadow?.blur,
                         shadowX: shape.shadow?.x,
                         shadowY: shape.shadow?.y,
+                        rotation: shape.rotation,
                         radius: shape.radius,
                     };
                     this.$store.dispatch('properties/setCurrentShape', shapeProps);
@@ -277,6 +287,26 @@ export default class Canvas extends Vue {
         e.preventDefault();
         const keyCode = e.key.toLowerCase();
         const ctrlIsPressed = e.ctrlKey || e.metaKey;
+        if(keyCode === 'c' && ctrlIsPressed && this.selectedShapes.length) {
+            this.copyShapes.splice(0);
+            this.copyShapes = [...this.selectedShapes];
+        }
+        if(keyCode === 'v' && ctrlIsPressed) {
+            for(const id of this.selectedShapes) {
+                const shape = this.shapes[id];
+                shape.isSelected = false;
+            }
+            this.copyShapes.map(s => {
+                const shape = this.shapes[s];
+                const shapeCopy = new Shape((shape.type as ShapeName), { stroke: shape.stroke!, fill: shape.fill }, {x: shape.x + 20, y: shape.y + 20, w: shape.width, h: shape.height});
+                shapeCopy.isSelected = true;
+                shapeCopy.radius = shape.radius;
+                shapeCopy.rotation = shape.rotation;
+                shapeCopy.shadow = shape.shadow;
+                this.shapes = {...this.shapes, [shapeCopy.id]: shapeCopy}
+            });
+            this.draw();
+        }
         switch(keyCode) {
             case 'h':
                 this.$store.commit('toolbar/setActiveTool', 'PAN');
@@ -374,6 +404,7 @@ export default class Canvas extends Vue {
                 ctx.beginPath();
                 ctx!.fillRect(this.startPoint.x, this.startPoint.y, coords.x - this.startPoint.x, coords.y - this.startPoint.y);
                 ctx!.strokeRect(this.startPoint.x, this.startPoint.y,  coords.x - this.startPoint.x, coords.y - this.startPoint.y);
+                ctx.closePath();
                 break;
             case 'CIRCLE':
                 ctx.beginPath();

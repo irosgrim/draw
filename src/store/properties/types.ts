@@ -9,6 +9,7 @@ export interface PropertiesStore {
     y: number;
     width: number;
     height: number;
+    rotation: number;
     radius: number[] | null;
     stroke: Stroke | null;
     fill: string;

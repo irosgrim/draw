@@ -79,10 +79,11 @@
                 <label for="rotation">Rotation</label>
                     <input 
                         class="property-input"
+                        :value="getShapeProperties.rotation"
                         type="number" 
                         name="rotation"
-                        value="0"
                         id="rotation"
+                        @keyup.enter="updateProperty('rotation', $event.target.value)"
                     />
             </div>
             <div v-if="getRadius">
