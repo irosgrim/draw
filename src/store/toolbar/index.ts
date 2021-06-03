@@ -8,19 +8,62 @@ import { Tool, ToolbarStore } from './types';
 const namespaced = true;
 
 export const toolbarStore: ToolbarStore = {
-    selectedTool: 'SELECT',
+    tools: {
+        SELECT: {
+            label: 'SELECT',
+            icon: 'select.svg',
+            selected: true,
+            disabled: false
+        },
+        RECTANGLE: {
+            label: 'RECTANGLE',
+            icon: 'rectangle.svg',
+            selected: false,
+            disabled: false
+        },
+        CIRCLE: {
+            label: 'CIRCLE',
+            icon: 'circle.svg',
+            selected: false,
+            disabled: false
+        },
+        LINE: {
+            label: 'LINE',
+            icon: 'line.svg',
+            selected: false,
+            disabled: false
+        },
+        PAN: {
+            label: 'PAN',
+            icon: 'pan.svg',
+            selected: false,
+            disabled: true
+        }
+    },
+    activeTool: 'SELECT',
+    contextMenu: {
+        visible: false,
+        x: 0,
+        y: 0,
+    },
 };
 
 export const getters: GetterTree<ToolbarStore, RootState> = {
-    getSomething(state) {
-        return 'something';
+    getActiveTool(state) {
+        return state.activeTool;
     },
+    getContextMenu(state) {
+        return state.contextMenu;
+    }
 };
 
 export const mutations: MutationTree<ToolbarStore> = {
-    setSomething(state, something: Tool) {
-        state.selectedTool = something;
+    setActiveTool(state, tool: Tool) {
+        state.activeTool = tool;
     },
+    showContextMenu(state, payload: { visible: boolean; x: number, y: number}) {
+        state.contextMenu = {...payload };
+    }
 };
 
 export const actions: ActionTree<ToolbarStore, RootState> = {

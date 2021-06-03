@@ -85,6 +85,47 @@
                         id="rotation"
                     />
             </div>
+            <div v-if="getRadius">
+                <div class="bold">Radius:</div>
+                <div class="property-container">
+                    <div>
+                        <input 
+                            class="property-input"
+                            type="number" 
+                            name="radiusNW"
+                            :value="getRadius.NW"
+                            id="radiusNW"
+                            @keyup.enter="$store.commit('properties/setRadius', {corner: 'NW', value: $event.target.value})"
+                        />
+                        <input 
+                            class="property-input"
+                            type="number" 
+                            name="radiusNE"
+                            :value="getRadius.NE"
+                            id="radiusNE"
+                            @keyup.enter="$store.commit('properties/setRadius', {corner: 'NE', value: $event.target.value})"
+                        />
+                    </div>
+                    <div>
+                        <input 
+                            class="property-input"
+                            type="number" 
+                            name="radiusSE"
+                            :value="getRadius.SE"
+                            id="radiusSE"
+                            @keyup.enter="$store.commit('properties/setRadius', {corner: 'SE', value: $event.target.value})"
+                        />
+                        <input 
+                            class="property-input"
+                            type="number" 
+                            name="radiusSW"
+                            :value="getRadius.SW"
+                            id="radiusSW"
+                            @keyup.enter="$store.commit('properties/setRadius', {corner: 'SW', value: $event.target.value})"
+                        />
+                    </div>
+                </div>
+            </div>
         </li>
         <li v-if="getId" class="properties-menu-item">
             <button type="button" @click="toggleFill" class="property m-negative-2">
@@ -93,7 +134,7 @@
                     {{ fill.showProperties ? '-' : '+'}}
                 </div>
             </button>
-            <div class="property-container" v-if="fill.showProperties">
+            <div class="property-container" v-if="getFill">
                 <ColorPicker
                     :color="getFill"
                     @color-changed="updateProperty('fill', $event)"
@@ -108,7 +149,7 @@
                     {{ stroke.showProperties ? '-' : '+'}}
                 </div>
             </button>
-            <div class="property-container" v-if="stroke.showProperties">
+            <div class="property-container" v-if="getStroke">
                 <ColorPicker 
                     :color="getStroke ? getStroke.style : stroke.color"
                     @color-changed="updateProperty('stroke',  { width: 1, style: $event})"
@@ -123,7 +164,7 @@
                     <div v-else>+</div>
                 </div>
             </button>
-            <div class="property-container" v-if="getShapeProperties.shadowColor !== ''">
+            <div class="property-container" v-if="getShadow.color !== ''">
                  <div class="d-flex mb-3">
                     <div>
                         <div class="d-flex align-items-center mb-2">
@@ -182,7 +223,7 @@
             </div>
         </li>
         <li class="properties-menu-item">
-            <button type="button" @click="$emit('export-png')"  class="property m-negative-2">
+            <button type="button" @click="$store.commit('properties/saveCanvas')" class="property m-negative-2">
                 <div class="bold">Export</div>
                 <div>
                     ...
@@ -198,7 +239,7 @@ import ColorPicker from '@/components/colorPicker/ColorPicker.vue';
 import {
   State,
   namespace
-} from 'vuex-class'
+} from 'vuex-class';
 import { Properties, Shadow, Stroke } from '@/Types/types';
 import { PropertiesStore } from '@/store/properties/types';
 
@@ -222,8 +263,7 @@ export default class PropertiesMenu extends Vue {
     @properties.Getter('getCanvas') public getCanvas!: string;
     @properties.Getter('getShadow') public getShadow!: Shadow;
     @properties.Getter('getShadowColor') public getShadowColor!: string;
-
-
+    @properties.Getter('getRadius') public getRadius!: any;
 
     public stroke = {
         showProperties: false,

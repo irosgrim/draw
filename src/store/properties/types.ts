@@ -9,6 +9,7 @@ export interface PropertiesStore {
     y: number;
     width: number;
     height: number;
+    radius: number[] | null;
     stroke: Stroke | null;
     fill: string;
     shadowX: number;
@@ -16,4 +17,5 @@ export interface PropertiesStore {
     shadowBlur: number;
     shadowColor: string;
     canvas: string;
+    saveCanvas: boolean;
 }

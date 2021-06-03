@@ -1,4 +1,4 @@
-import { Shape } from '@/components/canvas/canvas';
+import { Shape } from '@/components/canvas/shape';
 import { Coords, Dictionary, Shadow, Stroke } from '@/Types/types';
 import { Module } from 'vuex';
 import { GetterTree } from 'vuex';
@@ -37,6 +37,7 @@ export const propertiesStore: PropertiesStore = {
     y: 0,
     width: 0,
     height: 0,
+    radius: [5, 5, 5, 5],
     stroke: null,
     fill: 'rgba(255, 192, 203, 1)',
     shadowX: 0,
@@ -44,6 +45,7 @@ export const propertiesStore: PropertiesStore = {
     shadowBlur: 0,
     shadowColor: '',
     canvas: 'rgba(255, 255, 255, 1)',
+    saveCanvas: false,
 };
 
 export const getters: GetterTree<PropertiesStore, RootState> = {
@@ -61,6 +63,17 @@ export const getters: GetterTree<PropertiesStore, RootState> = {
     },
     getHeight(state) {
         return state.height;
+    },
+    getRadius(state): any | null {
+        if(state.radius) {
+            return {
+                NW: state.radius[0],
+                NE: state.radius[1],
+                SE: state.radius[2],
+                SW: state.radius[3],
+            }
+        }
+        return null;
     },
     getStroke(state) {
         return state.stroke;
@@ -96,6 +109,9 @@ export const getters: GetterTree<PropertiesStore, RootState> = {
             shadowBlur: state.shadowBlur,
             shadowColor: state.shadowColor,
         }
+    },
+    getSaveCanvas(state) {
+        return state.saveCanvas;
     }
 };
 
@@ -138,6 +154,7 @@ export const mutations: MutationTree<PropertiesStore> = {
         shadowY: string,
         shadowBlur: string,
         shadowColor: string,
+        radius: number[] | null,
     }) {
         state.id = shapeProperties.id || state.id;
         state.x = parseInt(shapeProperties.x, 10) || state.x;
@@ -150,7 +167,7 @@ export const mutations: MutationTree<PropertiesStore> = {
         state.shadowY = parseInt(shapeProperties.shadowY, 10) || state.shadowY;
         state.shadowBlur = parseInt(shapeProperties.shadowBlur, 10) || state.shadowBlur;
         state.shadowColor = shapeProperties.shadowColor || state.shadowColor;
-
+        state.radius = shapeProperties.radius;
     },
     setShadow(state, shadowProperty: {property: 'shadowX' | 'shadowY' | 'shadowBlur' | 'shadowColor', value: string | number}) {
         // @ts-ignore
@@ -178,24 +195,44 @@ export const mutations: MutationTree<PropertiesStore> = {
         state.shadowColor = '';
     },
     resetProperties(state) {
-        // state.id = defaultProperties.id;
-        // state.x = defaultProperties.x;
-        // state.y = defaultProperties.y;
-        // state.fill = defaultProperties.fill;
-        // state.stroke = defaultProperties.stroke;
-        // state.shadowBlur = defaultProperties.shadowBlur;
-        // state.shadowColor = defaultProperties.shadowColor;
-        // state.shadowX = defaultProperties.shadowX;
-        // state.shadowY = defaultProperties.shadowY;
-        for(const p of Object.entries(defaultProperties)) {
-            state[p] = defaultProperties[p];
-        }
+        state.id = defaultProperties.id;
+        state.x = defaultProperties.x;
+        state.y = defaultProperties.y;
+        state.fill = defaultProperties.fill;
+        state.stroke = defaultProperties.stroke;
+        state.shadowBlur = defaultProperties.shadowBlur;
+        state.shadowColor = defaultProperties.shadowColor;
+        state.shadowX = defaultProperties.shadowX;
+        state.shadowY = defaultProperties.shadowY;
     },
     setX(state, x: number) {
         state.x = x;
     },
     setY(state, y: number) {
         state.y = y;
+    },
+    setRadius(state, payload: {corner: string, value: string}) {
+        console.log(payload)
+        const value = parseInt(payload.value, 10);
+        if(state.radius) {
+            switch(payload.corner) {
+                case 'NW':
+                    state.radius.splice(0, 1, value);
+                    break;
+                case 'NE':
+                    state.radius.splice(1, 1, value);
+                    break;
+                case 'SW':
+                    state.radius.splice(2, 1, value);
+                    break;
+                case 'SE':
+                    state.radius.splice(3, 1, value);
+                    break;
+            }
+        }
+    },
+    saveCanvas(state) {
+        state.saveCanvas = !state.saveCanvas;
     }
 };
 

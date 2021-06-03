@@ -1,8 +1,8 @@
 <template>
     <div 
-        v-if="contextMenu.visible"
+        v-if="getContextMenu && getContextMenu.visible"
         :style="{ 
-                transform: `translate(${contextMenu.coords.x}px, ${contextMenu.coords.y}px)` 
+                transform: `translate(${getContextMenu.x}px, ${getContextMenu.y}px)` 
             }" 
         class="context-menu"
         v-click-outside="onClickOutside"
@@ -12,24 +12,22 @@
 </template>
 
 <script lang="ts">
-import { ContextMenuProperties } from '@/Types/types';
 import { Vue, Component, Prop} from 'vue-property-decorator';
+import { ContextMenu as ContextMenuProperties } from '@/store/toolbar/types';
+import { namespace } from 'vuex-class';
+const toolbar = namespace('toolbar');
 
+const defaultProps = {
+            visible: false,
+            x: 0,
+            y: 0,
+        }
 @Component
 export default class ContextMenu extends Vue {
-    @Prop({default: () => {
-        return {
-            visible: false,
-            coords: {
-                x: 0,
-                y: 0
-            }
-        }
-    }}) public contextMenu!: ContextMenuProperties;
+    @toolbar.Getter('getContextMenu') public getContextMenu!: ContextMenuProperties;
 
     public onClickOutside(): void {
-        console.log('close');
-        this.$emit('close-context-menu');
+        this.$store.commit('toolbar/showContextMenu', defaultProps)
     }
 }
 </script>

@@ -1,17 +1,17 @@
 <template>
-    <nav class="toolbar-container" ref="toolbar">
+    <nav class="toolbar-container" ref="toolbar" v-if="storeReady">
       <ul class="toolbar">
             <li>
                 <button type="button" ref="dragBtn">...</button>
             </li>
-            <li v-for="menuItem of menu" :key="menuItem.label">
+            <li v-for="tool of toolbarStore.tools" :key="tool.label">
                 <button 
                     type="button" 
-                    @click="$emit('selected-tool', menuItem.label)"
-                    :class="{selected: menuItem.selected, disabled: menuItem.disabled}"
-                    :disabled="menuItem.disabled"
+                    @click="$store.commit('toolbar/setActiveTool', tool.label)"
+                    :class="{selected: getActiveTool === tool.label, disabled: tool.disabled}"
+                    :disabled="tool.disabled"
                 >
-                    <img :src="menuItem.icon" :alt="menuItem.label">
+                    <img :src="getIcon(tool.icon)" :alt="tool.label">
                 </button>
             </li>
         </ul>
@@ -19,30 +19,32 @@
 </template>
 
 <script lang="ts">
-import { Tool } from '@/store/toolbar/types';
+import { Tool, ToolbarStore } from '@/store/toolbar/types';
 import { DefaultMenu, Dictionary } from '@/Types/types';
 import { Vue, Component, Prop, Watch } from "vue-property-decorator";
+import {
+  State,
+  namespace,
+  Getter
+} from 'vuex-class';
+
+const toolbar = namespace('toolbar');
 
 @Component
 export default class MainMenu extends Vue {
-    @Prop() selectedTool!: Tool;
-    @Prop() menu!: Dictionary<DefaultMenu>;
+    @State('toolbar') public toolbarStore!: ToolbarStore;
+    @toolbar.Getter('getActiveTool') getActiveTool!: Tool;
+    public storeReady = false;
 
-    @Watch('selectedTool')
-    private onSelectedToolChange(tool: Tool) {
-        this.setActiveTool(tool);
-    }
-
-    public setActiveTool(tool: Tool) {
-        this.resetMenu();
-        this.menu[tool].selected = true;
-        
-    }
-
-    private resetMenu() {
-        for(const tool in this.menu) {
-            this.menu[tool].selected = false;
+    private mounted() {
+        if(this.toolbarStore) {
+            this.storeReady = true;
         }
     }
+
+    public getIcon(iconName: string): string {
+        return require('@/assets/icons/' + iconName);
+    }
+
 }
 </script>

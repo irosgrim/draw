@@ -64,3 +64,4 @@ export const getMouseLocal = (mouseX: number, mouseY: number, x: number, y: numb
 }
 
 export const degreesToRadians = (degrees: number) => (Math.PI * degrees) / 180;
+export const radiansToDegrees = (radians: number) => radians * 180 / Math.PI;

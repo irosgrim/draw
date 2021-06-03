@@ -32,9 +32,6 @@ export default class Canvas extends Vue {
     @properties.Getter('getHeight') public getHeight!: number;
     @properties.Getter('getShadow') public getShadow!: Shadow;
     @properties.Getter('getShapeProperties') public getShapeProperties!: any;
-    @properties.Getter('getSaveCanvas') public getSaveCanvas!: boolean;
-    @properties.Getter('getRadius') public getRadius!: number[] | null;
-
 
     private canvas: HTMLCanvasElement | null = null;
     private ctx: CanvasRenderingContext2D | null = null;
@@ -54,28 +51,6 @@ export default class Canvas extends Vue {
     private selectedShapes: string[] = [];
     private shapes: Dictionary<Shape> = {};
     private copyShapes: string[] = [];
-
-    @Watch('getRadius')
-    private radiusChanged(radius:  any | null) {
-        if(!this.shapes[this.getShapeId].radius) {
-            this.shapes[this.getShapeId].radius = [];
-        }
-        if(radius) {
-            const newRadius = radius;
-            this.shapes[this.getShapeId].radius[0] = newRadius.NW;
-            this.shapes[this.getShapeId].radius[1] = newRadius.NE;
-            this.shapes[this.getShapeId].radius[2] = newRadius.SE;
-            this.shapes[this.getShapeId].radius[3] = newRadius.SW;
-        } else {
-            this.shapes[this.getShapeId].radius = null;
-        }
-        this.draw();
-    }
-
-    @Watch('getActiveTool')
-    private activeToolChanged() {
-        this.$store.commit('properties/resetProperties');
-    }
 
     @Watch('getShapeProperties')
     private onShapePropertiesChange(newShapeProperties: any) {
@@ -98,17 +73,13 @@ export default class Canvas extends Vue {
         }
     }
 
-    @Watch('getSaveCanvas')
-    private onSaveCanvas(shouldSaveCanvas: boolean) {
-        console.log('here')
-        if(shouldSaveCanvas) {
-            const link = document.createElement('a');
-            link.download = 'myCreation.png';
-            link.href = this.canvas!.toDataURL('image/png')
-            link.click();
-            link.remove;
-            this.$store.commit('properties/saveCanvas');
-        }
+    @Watch('saveCanvas')
+    private onSaveCanvas() {
+        const link = document.createElement('a');
+        link.download = 'myCreation.png';
+        link.href = this.canvas!.toDataURL('image/png')
+        link.click();
+        link.remove;
     }
 
     @Watch('getCanvas')
@@ -167,7 +138,6 @@ export default class Canvas extends Vue {
                         shadowBlur: shape.shadow?.blur,
                         shadowX: shape.shadow?.x,
                         shadowY: shape.shadow?.y,
-                        radius: shape.radius,
                     };
                     this.$store.dispatch('properties/setCurrentShape', shapeProps);
                 } 
@@ -260,10 +230,7 @@ export default class Canvas extends Vue {
         const ctrlIsPressed = e.ctrlKey || e.metaKey;
         if(this.getActiveTool === 'SELECT') {
             if(e.code.indexOf('Arrow') > -1) {
-                this.nudgeSelection(e.code, { 
-                    shift: shiftIsPressed, 
-                    ctrl: ctrlIsPressed
-                });
+                this.nudgeSelection(e.code, {shift: shiftIsPressed, ctrl: ctrlIsPressed})
                 this.draw();
             }
             if(e.code === 'Backspace' || e.code === 'Delete') {
@@ -277,6 +244,23 @@ export default class Canvas extends Vue {
         e.preventDefault();
         const keyCode = e.key.toLowerCase();
         const ctrlIsPressed = e.ctrlKey || e.metaKey;
+        if(keyCode === 'c' && ctrlIsPressed && this.selectedShapes.length) {
+            this.copyShapes.splice(0);
+            this.copyShapes = [...this.selectedShapes];
+        }
+        if(keyCode === 'v' && ctrlIsPressed) {
+            for(const id of this.selectedShapes) {
+                const shape = this.shapes[id];
+                shape.isSelected = false;
+            }
+            this.copyShapes.map(s => {
+                const shape = this.shapes[s];
+                const shapeCopy = new Shape((shape.type as ShapeName), { stroke: shape.stroke!, fill: shape.fill }, {x: shape.x + 20, y: shape.y + 20, w: shape.width, h: shape.height});
+                shapeCopy.isSelected = true;
+                this.shapes = {...this.shapes, [shapeCopy.id]: shapeCopy}
+            });
+            this.draw();
+        }
         switch(keyCode) {
             case 'h':
                 this.$store.commit('toolbar/setActiveTool', 'PAN');
@@ -307,30 +291,75 @@ export default class Canvas extends Vue {
     }
 
     private nudgeSelection(key: string, modifier: {shift: boolean, ctrl: boolean}) {
-        const nudgeAmount = modifier.shift ? 20 : modifier.ctrl ? 1 : 10;
-
-        for(const id in this.shapes) {
-            const shape = this.shapes[id];
-            if(shape.isSelected) {
-                switch(key) {
-                    case 'ArrowRight':
-                        shape.x += nudgeAmount;
+        switch(key) {
+            case 'ArrowRight':
+                for(const id in this.shapes) {
+                    const shape = this.shapes[id];
+                    if(shape.isSelected) {
+                        if(modifier.shift) {
+                            shape.x += 20;
+                        }
+                        if(modifier.ctrl) {
+                            shape.x += 1;
+                        }
+                        if(!modifier.shift && !modifier.ctrl) {
+                            shape.x += 10;
+                        }
                         this.$store.commit('properties/setX', shape.x);
-                        break;
-                    case 'ArrowLeft':
-                        shape.x -= nudgeAmount;
-                        this.$store.commit('properties/setX', shape.x);
-                        break;
-                    case 'ArrowUp':
-                        shape.y -= nudgeAmount;
-                        this.$store.commit('properties/setY', shape.y);
-                        break;
-                    case 'ArrowDown':
-                        shape.y += nudgeAmount;
-                        this.$store.commit('properties/setY', shape.y);
-                        break;
+                    }
                 }
-            }
+                break;
+            case 'ArrowLeft':
+                for(const id in this.shapes) {
+                    const shape = this.shapes[id];
+                    if(shape.isSelected) {
+                        if(modifier.shift) {
+                            shape.x -= 20;
+                        }
+                        if(modifier.ctrl) {
+                            shape.x -= 1;
+                        }
+                        if(!modifier.shift && !modifier.ctrl) {
+                            shape.x -= 10;
+                        }
+                        this.$store.commit('properties/setX', shape.x);
+                    }
+                }
+                break;
+             case 'ArrowUp':
+                for(const id in this.shapes) {
+                    const shape = this.shapes[id];
+                    if(shape.isSelected) {
+                        if(modifier.shift) {
+                            shape.y -= 20;
+                        }
+                        if(modifier.ctrl) {
+                            shape.y -= 1;
+                        }
+                        if(!modifier.shift && !modifier.ctrl) {
+                            shape.y -= 10;
+                        }
+                        this.$store.commit('properties/setY', shape.y);
+                    }
+                }
+                break;
+            case 'ArrowDown':
+                for(const id in this.shapes) {
+                    const shape = this.shapes[id];
+                    if(shape.isSelected) {
+                        if(modifier.shift) {
+                            shape.y += 20;
+                        }
+                        if(modifier.ctrl) {
+                            shape.y += 1;
+                        }
+                        if(!modifier.shift && !modifier.ctrl) {
+                            shape.y += 10;
+                        }
+                    }
+                    this.$store.commit('properties/setY', shape.y);
+                }
+                break;
         }
     }
 
@@ -390,12 +419,11 @@ export default class Canvas extends Vue {
                 ctx.closePath();
                 break;
             case 'LINE':
-                ctx.moveTo(coords.x, coords.y);
-                ctx!.strokeStyle = 'rgba(255, 191, 255, 0.9)';
                 ctx.beginPath();
+                ctx!.strokeStyle = 'rgba(255, 191, 255, 0.9)';
+                ctx.moveTo(coords.x, coords.y);
                 ctx.lineTo(this.endPoint.x, this.endPoint.y);
                 ctx.stroke()
-                ctx.closePath();
                 break;
         }
     }
@@ -416,9 +444,9 @@ export default class Canvas extends Vue {
 
     private showContextMenu(e: MouseEvent): void {
         e.preventDefault();
-        this.$store.commit('toolbar/showContextMenu', { visible: true, x: e.clientX, y: e.clientY });
+        console.log('context menu ', { clientX: e.clientX, clientY: e.clientY });
+        this.$emit('context-menu', { visible: true, mouseCoords: {x: e.clientX, y: e.clientY} });
     }
-
 }
 
 </script>
