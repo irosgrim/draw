@@ -180,7 +180,6 @@ export class Shape {
     }
 
     private roundedRectangle(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number[]) {
-        
         ctx.beginPath();
         ctx.moveTo(x + radius[0], y);
         ctx.lineTo(x + width - radius[1], y);
@@ -237,7 +236,36 @@ export class Shape {
         ctx.strokeStyle = '#00a7f9';
         ctx.strokeRect(this.x, this.y, this.width, this.height);
 
-        (["NW", "NE", "SW", "SE"] as PolarCoordinate[]).forEach(x => new ResizeHandle(x, {x: this.x, y: this.y}, this.width, this.height, ctx));
+        const handleCoordinate = ["NW", "NE", "SW", "SE"];
+        ctx!.beginPath();
+        ctx!.arc(this.x + 15, this.y + 15, 5, 0, 2 * Math.PI);
+        ctx!.fill();
+        ctx!.beginPath();
+        ctx!.arc(this.x + 15, this.y + 15, 5, 0, 2 * Math.PI);
+        ctx!.stroke();
+
+        ctx!.beginPath();
+        ctx!.arc(this.x + this.width - 15, this.y + 15, 5, 0, 2 * Math.PI);
+        ctx!.fill();
+        ctx!.beginPath();
+        ctx!.arc(this.x + this.width - 15, this.y + 15, 5, 0, 2 * Math.PI);
+        ctx!.stroke();
+
+        ctx!.beginPath();
+        ctx!.arc(this.x + this.width - 15, this.y + this.height -  15, 5, 0, 2 * Math.PI);
+        ctx!.fill();
+        ctx!.beginPath();
+        ctx!.arc(this.x + this.width - 15, this.y + this.height -  15, 5, 0, 2 * Math.PI);
+        ctx!.stroke();
+
+        ctx!.beginPath();
+        ctx!.arc(this.x + 15, this.y + this.height -  15, 5, 0, 2 * Math.PI);
+        ctx!.fill();
+        ctx!.beginPath();
+        ctx!.arc(this.x + 15, this.y + this.height -  15, 5, 0, 2 * Math.PI);
+        ctx!.stroke();
+
+        (handleCoordinate as PolarCoordinate[]).forEach(x => new ResizeHandle(x, {x: this.x, y: this.y}, this.width, this.height, ctx));
 
         const text = `${this.width} x ${this.height}`;
         const infoBoxH = 16;

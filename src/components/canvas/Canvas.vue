@@ -55,6 +55,7 @@ export default class Canvas extends Vue {
     private selectedShapes: string[] = [];
     private shapes: Dictionary<Shape> = {};
     private copyShapes: string[] = [];
+    private shapeModifier = false;
 
     @Watch('getRotation')
     private rotationChanged(rotation: number) {
@@ -230,10 +231,23 @@ export default class Canvas extends Vue {
         const mouseY = e.clientY - this.offsetY;
         const dx = e.movementX;
         const dy = e.movementY;
-        if(!this.mouseDown) {
-            return;
+        if(!this.mouseIsDown && this.selectedShapes.length) {
+            this.debounce(() => {
+                for (const id in this.shapes) {
+                    const shape = this.shapes[id];
+                    const localMouse = getMouseLocal(mouseX, mouseY, 0, 0, 1, 1, degreesToRadians(0))
+                    if(shape.isSelected && this.mouseIsOverModifier(mouseX, mouseY, shape.x, shape.y, shape.width, shape.height)) { 
+                        this.shapeModifier = true;
+                        if(this.shapeModifier) {
+                            //
+                        }
+                    } else {
+                        this.shapeModifier = false;
+                    }
+                }
+            }, 20)
         }
-        if(this.mouseIsDown) {
+        if(this.mouseIsDown && !this.shapeModifier) {
             this.draw();
             if(this.getActiveTool === 'SELECT') {
                 for (const id in this.shapes) {
@@ -265,6 +279,9 @@ export default class Canvas extends Vue {
                 this.drawShapeGhost({x: mouseX, y: mouseY}, this.ctx!, this.getActiveTool);
             }
         }
+    }
+    mouseIsOverModifier(mouseX: number, mouseY: number, shapeX: number, shapeY: number, width: number, height: number): boolean {
+        return mouseX > shapeX + 10 && mouseX < shapeX + 20 && mouseY > shapeY + 10 && mouseY < shapeY + 20;
     }
 
     public onKeyDown(e: KeyboardEvent) {

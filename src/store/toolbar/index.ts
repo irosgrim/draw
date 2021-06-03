@@ -38,6 +38,12 @@ export const toolbarStore: ToolbarStore = {
             icon: 'pan.svg',
             selected: false,
             disabled: true
+        },
+        LAYERS: {
+            label: 'LAYERS',
+            icon: 'layers.svg',
+            selected: false,
+            disabled: true
         }
     },
     activeTool: 'SELECT',

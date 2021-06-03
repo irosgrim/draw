@@ -11,7 +11,7 @@
                     :class="{selected: getActiveTool === tool.label, disabled: tool.disabled}"
                     :disabled="tool.disabled"
                 >
-                    <img :src="getIcon(tool.icon)" :alt="tool.label">
+                    <img :src="getIcon(tool.icon)" :alt="tool.label" class="toolbar-icon">
                 </button>
             </li>
         </ul>
@@ -20,8 +20,7 @@
 
 <script lang="ts">
 import { Tool, ToolbarStore } from '@/store/toolbar/types';
-import { DefaultMenu, Dictionary } from '@/Types/types';
-import { Vue, Component, Prop, Watch } from "vue-property-decorator";
+import { Vue, Component } from "vue-property-decorator";
 import {
   State,
   namespace,
