@@ -191,12 +191,6 @@ export const mutations: MutationTree<PropertiesStore> = {
         // @ts-ignore
         state[shadowProperty.property] = shadowProperty.value;
     },
-    // setShadowColor(state, shadowColor: string) {
-    //     console.log('new color', shadowColor);
-    //     const newShadow = {...state.shadow, color: shadowColor};
-    //     Object.assign(state.shadow, newShadow);
-    //     // state.shadow!.color = shadowColor;
-    // },
     setStroke(state, stroke: Stroke | null) {
         state.stroke = stroke;
     },
@@ -243,7 +237,6 @@ export const mutations: MutationTree<PropertiesStore> = {
         state.rotation = parseFloat(rotation);
     },
     setRadius(state, payload: {corner: string, value: string}) {
-        console.log(payload)
         const value = parseInt(payload.value, 10);
         if(state.radius) {
             switch(payload.corner) {

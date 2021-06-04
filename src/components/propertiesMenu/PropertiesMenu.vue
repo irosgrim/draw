@@ -272,21 +272,18 @@ export default class PropertiesMenu extends Vue {
     public stroke = {
         showProperties: false,
     }
+
     public fill = {
         showProperties: false,
     }
+
     public canvas = {
         color: 'rgba(255, 255, 255, 1)',
         showProperties: true,
     }
+
     public shadow = {
         showProperties: false,
-    }
-
-    @Watch('getShadowColor')
-    private onShadowChange(shadowProperties: any) {
-        // console.log(shadowProperties);
-        
     }
 
     public async toggleStroke() {
@@ -301,11 +298,8 @@ export default class PropertiesMenu extends Vue {
     public toggleFill() {
         this.fill.showProperties = !this.fill.showProperties;
         if(this.fill.showProperties) {
-            console.log('one')
             this.$store.commit('properties/setFillOpacity', 1);
         } else {
-            console.log('two')
-
             this.$store.commit('properties/setFillOpacity', 0);
         }
     }

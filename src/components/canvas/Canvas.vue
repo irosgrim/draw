@@ -66,17 +66,18 @@ export default class Canvas extends Vue {
     }
 
     @Watch('getRadius')
-    private radiusChanged(radius:  number[] | null) {
+    private radiusChanged(radius:  {NW: number, NE: number, SE: number, SW: number}| null) {
         if(this.getShapeId) {
             if(!this.shapes[this.getShapeId].radius) {
                 this.shapes[this.getShapeId].radius = [];
             }
-            if(radius) {
+            if( radius ) {
                 const newRadius = radius;
-                this.shapes[this.getShapeId].radius[0] = newRadius.NW;
-                this.shapes[this.getShapeId].radius[1] = newRadius.NE;
-                this.shapes[this.getShapeId].radius[2] = newRadius.SE;
-                this.shapes[this.getShapeId].radius[3] = newRadius.SW;
+                const shapeRadius = this.shapes[this.getShapeId].radius!;
+                shapeRadius[0] = newRadius.NW;
+                shapeRadius[1] = newRadius.NE;
+                shapeRadius[2] = newRadius.SE;
+                shapeRadius[3] = newRadius.SW;
             } else {
                 this.shapes[this.getShapeId].radius = null;
             }
@@ -112,7 +113,6 @@ export default class Canvas extends Vue {
 
     @Watch('getSaveCanvas')
     private onSaveCanvas(shouldSaveCanvas: boolean) {
-        console.log('here')
         if(shouldSaveCanvas) {
             const link = document.createElement('a');
             link.download = 'myCreation.png';
@@ -209,7 +209,6 @@ export default class Canvas extends Vue {
         if(['RECTANGLE', 'CIRCLE', 'LINE'].includes(this.getActiveTool)) {
             const fill = this.getShapeProperties.fill;
             const stroke = this.getShapeProperties.stroke;
-            console.log(stroke);
             // @ts-ignore
             const s = new Shape(this.getActiveTool, { coords: {start: {...this.startPoint}, end: {x: mouseX, y: mouseY}}, fill: fill, stroke });
             this.$set(this.shapes, s.id, s);
