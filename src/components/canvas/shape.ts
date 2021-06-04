@@ -235,38 +235,10 @@ export class Shape {
         ctx.lineWidth = 1;
         ctx.strokeStyle = '#00a7f9';
         ctx.strokeRect(this.x, this.y, this.width, this.height);
-
         const handleCoordinate = ["NW", "NE", "SW", "SE"];
-        ctx!.beginPath();
-        ctx!.arc(this.x + 15, this.y + 15, 5, 0, 2 * Math.PI);
-        ctx!.fill();
-        ctx!.beginPath();
-        ctx!.arc(this.x + 15, this.y + 15, 5, 0, 2 * Math.PI);
-        ctx!.stroke();
-
-        ctx!.beginPath();
-        ctx!.arc(this.x + this.width - 15, this.y + 15, 5, 0, 2 * Math.PI);
-        ctx!.fill();
-        ctx!.beginPath();
-        ctx!.arc(this.x + this.width - 15, this.y + 15, 5, 0, 2 * Math.PI);
-        ctx!.stroke();
-
-        ctx!.beginPath();
-        ctx!.arc(this.x + this.width - 15, this.y + this.height -  15, 5, 0, 2 * Math.PI);
-        ctx!.fill();
-        ctx!.beginPath();
-        ctx!.arc(this.x + this.width - 15, this.y + this.height -  15, 5, 0, 2 * Math.PI);
-        ctx!.stroke();
-
-        ctx!.beginPath();
-        ctx!.arc(this.x + 15, this.y + this.height -  15, 5, 0, 2 * Math.PI);
-        ctx!.fill();
-        ctx!.beginPath();
-        ctx!.arc(this.x + 15, this.y + this.height -  15, 5, 0, 2 * Math.PI);
-        ctx!.stroke();
+        this.drawRadiusHandles(ctx);
 
         (handleCoordinate as PolarCoordinate[]).forEach(x => new ResizeHandle(x, {x: this.x, y: this.y}, this.width, this.height, ctx));
-
         const text = `${this.width} x ${this.height}`;
         const infoBoxH = 16;
         const textWidth = ctx.measureText(text).width;
@@ -278,6 +250,35 @@ export class Shape {
         ctx.textAlign = "center";
         ctx.font = "12px Arial";
         ctx.fillText(text, this.x + this.width / 2, this.y + this.height + 16 + infoBoxH / 3.6);
+    }
+    private drawRadiusHandles(ctx: CanvasRenderingContext2D) {
+        ctx!.beginPath();
+        ctx!.arc(this.x + 15 + this.radius![0]/Math.PI, this.y + 15 + this.radius![0]/Math.PI, 5, 0, 2 * Math.PI);
+        ctx!.fill();
+        ctx!.beginPath();
+        ctx!.arc(this.x + 15 + this.radius![0]/Math.PI, this.y + 15 + this.radius![0]/Math.PI, 5, 0, 2 * Math.PI);
+        ctx!.stroke();
+
+        ctx!.beginPath();
+        ctx!.arc(this.x + this.width - 15 - this.radius![1]/Math.PI, this.y + 15 + this.radius![1]/Math.PI, 5, 0, 2 * Math.PI);
+        ctx!.fill();
+        ctx!.beginPath();
+        ctx!.arc(this.x + this.width - 15 - this.radius![1]/Math.PI, this.y + 15 + this.radius![1]/Math.PI, 5, 0, 2 * Math.PI);
+        ctx!.stroke();
+
+        ctx!.beginPath();
+        ctx!.arc(this.x + this.width - 15 - this.radius![2]/Math.PI, this.y + this.height -  15 - this.radius![2]/Math.PI, 5, 0, 2 * Math.PI);
+        ctx!.fill();
+        ctx!.beginPath();
+        ctx!.arc(this.x + this.width - 15 - this.radius![2]/Math.PI, this.y + this.height -  15 - this.radius![2]/Math.PI, 5, 0, 2 * Math.PI);
+        ctx!.stroke();
+
+        ctx!.beginPath();
+        ctx!.arc(this.x + 15 + this.radius![3]/Math.PI, this.y + this.height -  15 - this.radius![3]/Math.PI, 5, 0, 2 * Math.PI);
+        ctx!.fill();
+        ctx!.beginPath();
+        ctx!.arc(this.x + 15 + this.radius![3]/Math.PI, this.y + this.height -  15 - this.radius![3]/Math.PI, 5, 0, 2 * Math.PI);
+        ctx!.stroke();
     }
 }
 

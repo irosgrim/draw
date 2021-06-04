@@ -157,6 +157,9 @@ export default class Canvas extends Vue {
         this.mouseIsDown = true;
         this.$set(this.startPoint, 'x', mouseX);
         this.$set(this.startPoint, 'y', mouseY);
+        if(this.shapeModifier) {
+            console.log('dragging', mouseX)
+        }
         if(this.getActiveTool === 'SELECT') {
             this.selectedShapes = [];
             this.$store.commit('properties/resetProperties');
@@ -206,6 +209,12 @@ export default class Canvas extends Vue {
         this.mouseIsDown = false;
         this.$set(this.endPoint, 'x', mouseX);
         this.$set(this.endPoint, 'y', mouseY);
+        if(this.shapeModifier) {
+            console.log('stoppeDragging', mouseX);
+            const dX = this.endPoint.x - this.startPoint.x;
+            this.shapes[this.getShapeId].radius = [dX, dX, dX, dX];
+            this.draw();
+        }
         if(['RECTANGLE', 'CIRCLE', 'LINE'].includes(this.getActiveTool)) {
             const fill = this.getShapeProperties.fill;
             const stroke = this.getShapeProperties.stroke;
@@ -235,8 +244,11 @@ export default class Canvas extends Vue {
                 for (const id in this.shapes) {
                     const shape = this.shapes[id];
                     const localMouse = getMouseLocal(mouseX, mouseY, 0, 0, 1, 1, degreesToRadians(0))
-                    if(shape.isSelected && this.mouseIsOverModifier(mouseX, mouseY, shape.x, shape.y, shape.width, shape.height)) { 
+                    if(shape.isSelected && this.mouseIsOverModifier(mouseX, mouseY, shape.x, shape.y, shape.width, shape.height, shape.radius!)) { 
                         this.shapeModifier = true;
+                        this.ctx?.beginPath();
+                        this.ctx?.arc(mouseX + 25, mouseY + 30, 15, Math.PI, degreesToRadians(270), false);
+                        this.ctx?.stroke();
                         if(this.shapeModifier) {
                             //
                         }
@@ -244,7 +256,9 @@ export default class Canvas extends Vue {
                         this.shapeModifier = false;
                     }
                 }
-            }, 20)
+            }, 20);
+            this.draw();
+
         }
         if(this.mouseIsDown && !this.shapeModifier) {
             this.draw();
@@ -279,8 +293,14 @@ export default class Canvas extends Vue {
             }
         }
     }
-    mouseIsOverModifier(mouseX: number, mouseY: number, shapeX: number, shapeY: number, width: number, height: number): boolean {
-        return mouseX > shapeX + 10 && mouseX < shapeX + 20 && mouseY > shapeY + 10 && mouseY < shapeY + 20;
+    mouseIsOverModifier(mouseX: number, mouseY: number, shapeX: number, shapeY: number, width: number, height: number, radius: number[]): boolean {
+        const NW = {
+            x: mouseX + 15 + radius![0]/Math.PI,
+            y: mouseY + 15 + radius![0]/Math.PI
+        }
+        const isOverModifier = NW.x > shapeX + 15 && mouseX < shapeX + 30 && NW.y > shapeY + 15 && mouseY < shapeY + 30;
+        console.log(NW.x > shapeX + 15 && mouseX < shapeX + 30 && NW.y > shapeY + 15 && mouseY < shapeY + 30);
+        return isOverModifier;
     }
 
     public onKeyDown(e: KeyboardEvent) {
