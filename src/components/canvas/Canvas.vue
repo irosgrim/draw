@@ -195,9 +195,6 @@ export default class Canvas extends Vue {
                     shape.isSelected = false;
                 }
             }
-            // if(this.selectedShapes.length && this.mouseIsDragging && this.activeResizeModifier) {
-            //         console.log('resizing');
-            //     }
             this.draw();
             return;
         }
