@@ -169,7 +169,7 @@ export default class Canvas extends Vue {
             this.$store.commit('properties/resetProperties');
             for (const id in this.shapes) {
                 const shape = this.shapes[id];
-                if (shape.mouseIsOver(e, this.offsetX, this.offsetY) || this.mouseIsDragging) {
+                if (shape.mouseIsOver(e, this.offsetX, this.offsetY) || this.activeResizeModifier) {
                     shape.isSelected = true;
                     if(this.selectedShapes.indexOf(shape.id) === -1) {
                         this.selectedShapes = [shape.id];
@@ -195,7 +195,6 @@ export default class Canvas extends Vue {
                     shape.isSelected = false;
                 }
             }
-            this.draw();
             return;
         }
         for (const id in this.shapes) {
@@ -245,10 +244,6 @@ export default class Canvas extends Vue {
         const dx = e.movementX;
         const dy = e.movementY;
         if(this.activeResizeModifier && this.mouseIsDragging) {
-            let dX = 0;
-            let dY = 0;
-            const originalShapeWidth = this.getWidth;
-            const originalShapeHeight = this.getHeight;
             const originalShapeX = this.getX;
             const originalShapeY = this.getY;
             let newX = 0;
@@ -259,25 +254,25 @@ export default class Canvas extends Vue {
             if(this.activeResizeModifier === 'NW') {
                 newX = mouseX;
                 newY = mouseY;
-                newWidth = this.getWidth + originalShapeX - mouseX;
-                newHeight = this.getHeight + originalShapeY - mouseY;
+                newWidth = this.getWidth + originalShapeX - mouseX > 0 ? this.getHeight + originalShapeY - mouseY : 1;
+                newHeight = this.getHeight + originalShapeY - mouseY > 0 ? this.getHeight + originalShapeY - mouseY : 1;
                 this.$store.dispatch('properties/setCurrentShape', { x: newX, y: newY, width: newWidth, height: newHeight });
             }
             if(this.activeResizeModifier === 'NE') {
                 newY = mouseY;
-                newWidth = mouseX - originalShapeX;
-                newHeight = this.getHeight + originalShapeY - mouseY;
+                newWidth = mouseX - originalShapeX > 0 ? mouseX - originalShapeX : 1;
+                newHeight = this.getHeight + originalShapeY - mouseY > 0 ? this.getHeight + originalShapeY - mouseY : 1;
                 this.$store.dispatch('properties/setCurrentShape', { y: newY, width: newWidth, height: newHeight });
             }
             if(this.activeResizeModifier === 'SE') {
                 newWidth = mouseX - originalShapeX;
-                newHeight = mouseY - originalShapeY;
+                newHeight = mouseY - originalShapeY > 0 ?  mouseY - originalShapeY : 1;
                 this.$store.dispatch('properties/setCurrentShape', { width: newWidth, height: newHeight });
             }
             if(this.activeResizeModifier === 'SW') {
                 newX = mouseX;
-                newWidth = this.getWidth + originalShapeX - mouseX;
-                newHeight = mouseY - originalShapeY;
+                newWidth = this.getWidth + originalShapeX - mouseX > 0 ? this.getHeight + originalShapeY - mouseY : 1;
+                newHeight = mouseY - originalShapeY > 0 ?  mouseY - originalShapeY : 1;
                 this.$store.dispatch('properties/setCurrentShape', { x: newX, width: newWidth, height: newHeight });
             }
         }
@@ -298,7 +293,7 @@ export default class Canvas extends Vue {
                     const shape = this.shapes[id];
                     const localMouse = getMouseLocal(mouseX, mouseY, 0, 0, 1, 1, degreesToRadians(0));
                     const activeRadiusHandle = shape.mouseIsOverRadiusHandle(mouseX, mouseY);
-                    const activeResizeHandle = shape.mouseIsOverResizeHandle(mouseX, mouseY);
+                    const activeResizeHandle = shape.width >= 50 && shape.height>= 50 && shape.mouseIsOverResizeHandle(mouseX, mouseY);
                     if(shape.isSelected && activeResizeHandle) {
                         this.activeResizeModifier = activeResizeHandle;
                         switch(activeResizeHandle) {
@@ -549,7 +544,6 @@ export default class Canvas extends Vue {
         e.preventDefault();
         this.$store.commit('toolbar/showContextMenu', { visible: true, x: e.clientX, y: e.clientY });
     }
-
 }
 
 </script>

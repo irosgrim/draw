@@ -237,7 +237,7 @@ export class Shape {
 
     private drawRadiusHandles(ctx: CanvasRenderingContext2D) {
         const handleCoordinate = ["NW", "NE", "SW", "SE"];
-        if(this.type === 'RECTANGLE') {
+        if(this.type === 'RECTANGLE' && this.width >= 50 && this.height >= 50) {
             this.radiusHandles = [];
             (handleCoordinate as PolarCoordinate[]).forEach((polarPosition, index) => {
                 this.radiusHandles = [...this.radiusHandles!, new RadiusHandle(polarPosition, {x: this.x, y: this.y}, this.width, this.height, ctx, this.radius![index])]

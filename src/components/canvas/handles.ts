@@ -114,7 +114,21 @@ export class RadiusHandle {
     }
 
     public mouseIsOver(mouseX: number, mouseY: number): boolean {
-        return mouseX >= this.x - this.hotSpot && mouseX <=  this.x + this.hotSpot && mouseY >= this.y - this.hotSpot && mouseY <= this.y + this.hotSpot;
+        const hotSpotNW = mouseX >= this.x - 3 && mouseX <=  this.x + this.hotSpot && mouseY >= this.y - 3 && mouseY <= this.y + this.hotSpot;
+        const hotSpotNE = mouseX >= this.x - this.hotSpot && mouseX <=  this.x + 3 && mouseY >= this.y - 3 && mouseY <= this.y + this.hotSpot;
+        const hotSpotSE = mouseX >= this.x - this.hotSpot && mouseX <=  this.x + 3 && mouseY >= this.y - this.hotSpot && mouseY <= this.y + 3;
+        const hotSpotSW = mouseX >= this.x - 3 && mouseX <=  this.x + this.hotSpot && mouseY >= this.y - this.hotSpot && mouseY <= this.y + 3;
+        switch (this.position) {
+            case 'NW':
+                return hotSpotNW;
+            case 'NE':
+                return hotSpotNE;
+            case 'SE':
+                return hotSpotSE;
+            case 'SW':
+                return hotSpotSW;
+        }
+        return false;
     }
 
     private draw(x: number, y: number) {
