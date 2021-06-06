@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts">
-import { Dictionary, Shadow, ShapeName} from '@/Types/types';
+import { Dictionary, PolarCoordinate, Shadow, ShapeName} from '@/Types/types';
 import { Shape } from './shape';
 import { Vue, Component, Prop, Watch } from 'vue-property-decorator';
 import {
@@ -55,7 +55,7 @@ export default class Canvas extends Vue {
     private selectedShapes: string[] = [];
     private shapes: Dictionary<Shape> = {};
     private copyShapes: string[] = [];
-    private shapeModifier = false;
+    private activeRadiusModifier: PolarCoordinate | null = null;
 
     @Watch('getRotation')
     private rotationChanged(rotation: number) {
@@ -157,8 +157,8 @@ export default class Canvas extends Vue {
         this.mouseIsDown = true;
         this.$set(this.startPoint, 'x', mouseX);
         this.$set(this.startPoint, 'y', mouseY);
-        if(this.shapeModifier) {
-            console.log('dragging', mouseX)
+        if(this.activeRadiusModifier) {
+            this.mouseIsDragging = true;
         }
         if(this.getActiveTool === 'SELECT') {
             this.selectedShapes = [];
@@ -209,11 +209,8 @@ export default class Canvas extends Vue {
         this.mouseIsDown = false;
         this.$set(this.endPoint, 'x', mouseX);
         this.$set(this.endPoint, 'y', mouseY);
-        if(this.shapeModifier) {
-            console.log('stoppeDragging', mouseX);
-            const dX = this.endPoint.x - this.startPoint.x;
-            this.shapes[this.getShapeId].radius = [dX, dX, dX, dX];
-            this.draw();
+        if(this.activeRadiusModifier) {
+            this.mouseIsDragging = false;
         }
         if(['RECTANGLE', 'CIRCLE', 'LINE'].includes(this.getActiveTool)) {
             const fill = this.getShapeProperties.fill;
@@ -239,28 +236,37 @@ export default class Canvas extends Vue {
         const mouseY = e.clientY - this.offsetY;
         const dx = e.movementX;
         const dy = e.movementY;
+        if(this.activeRadiusModifier && this.mouseIsDragging) {
+            let dX = 0;
+            if( this.activeRadiusModifier === 'NW' || this.activeRadiusModifier === 'SW') {
+                dX = mouseX - this.startPoint.x;
+            } else {
+                dX = this.startPoint.x - mouseX;
+            }
+            if(dX > 0 && dX <= this.shapes[this.getShapeId].width / 2 && dX <= this.shapes[this.getShapeId].height / 2) {
+                this.$store.dispatch('properties/setCurrentShape', { radius: [dX, dX, dX, dX]});
+            }
+        }
         if(!this.mouseIsDown && this.selectedShapes.length) {
             this.debounce(() => {
                 for (const id in this.shapes) {
                     const shape = this.shapes[id];
-                    const localMouse = getMouseLocal(mouseX, mouseY, 0, 0, 1, 1, degreesToRadians(0))
-                    if(shape.isSelected && this.mouseIsOverModifier(mouseX, mouseY, shape.x, shape.y, shape.width, shape.height, shape.radius!)) { 
-                        this.shapeModifier = true;
-                        this.ctx?.beginPath();
-                        this.ctx?.arc(mouseX + 25, mouseY + 30, 15, Math.PI, degreesToRadians(270), false);
-                        this.ctx?.stroke();
-                        if(this.shapeModifier) {
-                            //
-                        }
+                    const localMouse = getMouseLocal(mouseX, mouseY, 0, 0, 1, 1, degreesToRadians(0));
+                    const activeRadiusHandle = shape.mouseIsOverRadiusHandle(mouseX, mouseY);
+                    console.log('here')
+                    if(shape.isSelected && shape.type === 'RECTANGLE' && activeRadiusHandle) { 
+                        this.activeRadiusModifier = activeRadiusHandle;
+                        this.canvas?.classList.add('radius-cursor');
                     } else {
-                        this.shapeModifier = false;
+                        this.canvas?.classList.remove('radius-cursor');
+                        this.activeRadiusModifier = null;
                     }
                 }
             }, 20);
             this.draw();
 
         }
-        if(this.mouseIsDown && !this.shapeModifier) {
+        if(this.mouseIsDown && !this.activeRadiusModifier) {
             this.draw();
             if(this.getActiveTool === 'SELECT') {
                 for (const id in this.shapes) {
@@ -292,15 +298,6 @@ export default class Canvas extends Vue {
                 this.drawShapeGhost({x: mouseX, y: mouseY}, this.ctx!, this.getActiveTool);
             }
         }
-    }
-    mouseIsOverModifier(mouseX: number, mouseY: number, shapeX: number, shapeY: number, width: number, height: number, radius: number[]): boolean {
-        const NW = {
-            x: mouseX + 15 + radius![0]/Math.PI,
-            y: mouseY + 15 + radius![0]/Math.PI
-        }
-        const isOverModifier = NW.x > shapeX + 15 && mouseX < shapeX + 30 && NW.y > shapeY + 15 && mouseY < shapeY + 30;
-        console.log(NW.x > shapeX + 15 && mouseX < shapeX + 30 && NW.y > shapeY + 15 && mouseY < shapeY + 30);
-        return isOverModifier;
     }
 
     public onKeyDown(e: KeyboardEvent) {

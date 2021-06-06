@@ -1,7 +1,7 @@
 import { degreesToRadians, getMouseLocal, mouseIsInsideEllipse, mouseIsInsideRectangle, setTransform } from '@/helpers/geometry';
 import { Coords, PolarCoordinate, Shadow, ShapeCoords, ShapeName, Stroke } from '@/Types/types';
 import { uid } from 'uid';
-import { ResizeHandle } from './handles';
+import { RadiusHandle, ResizeHandle } from './handles';
 
 export class Shape {
     public id = '';
@@ -19,6 +19,7 @@ export class Shape {
     public shadow: Shadow | null = null;
     private _isMoving = false;
     private _isSelected = false;
+    public radiusHandles: RadiusHandle[] | null =  null;
     
     constructor(type: ShapeName, shapeProperties: {coords?: ShapeCoords, stroke?: Stroke, fill?: string}, copyShape?: {x: number, y: number, h: number, w: number}) {
         this.id = uid(12);
@@ -71,13 +72,6 @@ export class Shape {
             return mouseIsInsideEllipse(mouseX, mouseY, offsetX, offsetY, this.x, this.y, this.height, this.width);
         }
         if(this.type === 'RECTANGLE') {
-            const checkIfMouseOverNEHandle = () => {
-                return (
-                    mouseX < this.x + this.width + 10 && mouseX > this.x + this.width - 10 &&
-                    mouseY > this.y - 10 && mouseY < this.y + 10 
-                )
-            }
-
             return mouseIsInsideRectangle(mouseX, mouseY, offsetX, offsetY, this.x, this.y, this.height, this.width);
         }
         if(this.type === 'LINE') { 
@@ -116,6 +110,15 @@ export class Shape {
         if(this.shadow) {
             this.applyShadow(ctx);
         }
+        if(this.radius) {
+            const radiuses = this.radius.map( x => this.height/2 > x && this.width/2 > x);
+            radiuses?.forEach( (r, i) => {
+            if(!r) {
+                this.radius![i] = (this.height / 2);
+            }
+        })
+        }
+        
         switch(this.type) {
             case 'RECTANGLE':
                 this.drawRectangle(ctx);
@@ -176,6 +179,7 @@ export class Shape {
         ctx.restore();
         if(this.isSelected) {
             this.drawResizeHandles(ctx);
+            this.drawRadiusHandles(ctx);
         }
     }
 
@@ -230,13 +234,30 @@ export class Shape {
         // new ResizeHandle('E', {x: this.endX, y: this.endY}, Math.abs(this.endX - this.x), Math.abs(this.endY - this.y), ctx);
     }
 
+    private drawRadiusHandles(ctx: CanvasRenderingContext2D) {
+        const handleCoordinate = ["NW", "NE", "SW", "SE"];
+        if(this.type === 'RECTANGLE') {
+            this.radiusHandles = [];
+            (handleCoordinate as PolarCoordinate[]).forEach((polarPosition, index) => {
+                this.radiusHandles = [...this.radiusHandles!, new RadiusHandle(polarPosition, {x: this.x, y: this.y}, this.width, this.height, ctx, this.radius![index])]
+            });
+        }
+    }
+
+    public mouseIsOverRadiusHandle(mouseX: number, mouseY: number) {
+        if(this.type === 'RECTANGLE') {
+            // console.log(this.radiusHandles?.find(x => x.mouseIsOver(mouseX, mouseY))?.position)
+            // return this.radiusHandles?.some( x => x.mouseIsOver(mouseX, mouseY));
+            return this.radiusHandles?.find(x => x.mouseIsOver(mouseX, mouseY))?.position || null;
+        }
+    }
+
     private drawResizeHandles(ctx: CanvasRenderingContext2D) {
         ctx.setLineDash([]);
         ctx.lineWidth = 1;
         ctx.strokeStyle = '#00a7f9';
         ctx.strokeRect(this.x, this.y, this.width, this.height);
         const handleCoordinate = ["NW", "NE", "SW", "SE"];
-        this.drawRadiusHandles(ctx);
 
         (handleCoordinate as PolarCoordinate[]).forEach(x => new ResizeHandle(x, {x: this.x, y: this.y}, this.width, this.height, ctx));
         const text = `${this.width} x ${this.height}`;
@@ -251,50 +272,36 @@ export class Shape {
         ctx.font = "12px Arial";
         ctx.fillText(text, this.x + this.width / 2, this.y + this.height + 16 + infoBoxH / 3.6);
     }
-    private drawRadiusHandles(ctx: CanvasRenderingContext2D) {
-        ctx!.beginPath();
-        ctx!.arc(this.x + 15 + this.radius![0]/Math.PI, this.y + 15 + this.radius![0]/Math.PI, 5, 0, 2 * Math.PI);
-        ctx!.fill();
-        ctx!.beginPath();
-        ctx!.arc(this.x + 15 + this.radius![0]/Math.PI, this.y + 15 + this.radius![0]/Math.PI, 5, 0, 2 * Math.PI);
-        ctx!.stroke();
+    // private drawRadiusHandles(ctx: CanvasRenderingContext2D) {
+    //     const handleCoordinate = ["NW", "NE", "SW", "SE"];
+    //     (handleCoordinate as PolarCoordinate[]).forEach(polarPosition => new RadiusHandle(polarPosition, {x: this.x, y: this.y}, this.width, this.height, ctx));
+    
+    //     // ctx!.beginPath();
+    //     // ctx!.arc(this.x + 15 + this.radius![0]/Math.PI, this.y + 15 + this.radius![0]/Math.PI, 5, 0, 2 * Math.PI);
+    //     // ctx!.fill();
+    //     // ctx!.beginPath();
+    //     // ctx!.arc(this.x + 15 + this.radius![0]/Math.PI, this.y + 15 + this.radius![0]/Math.PI, 5, 0, 2 * Math.PI);
+    //     // ctx!.stroke();
 
-        ctx!.beginPath();
-        ctx!.arc(this.x + this.width - 15 - this.radius![1]/Math.PI, this.y + 15 + this.radius![1]/Math.PI, 5, 0, 2 * Math.PI);
-        ctx!.fill();
-        ctx!.beginPath();
-        ctx!.arc(this.x + this.width - 15 - this.radius![1]/Math.PI, this.y + 15 + this.radius![1]/Math.PI, 5, 0, 2 * Math.PI);
-        ctx!.stroke();
+    //     // ctx!.beginPath();
+    //     // ctx!.arc(this.x + this.width - 15 - this.radius![1]/Math.PI, this.y + 15 + this.radius![1]/Math.PI, 5, 0, 2 * Math.PI);
+    //     // ctx!.fill();
+    //     // ctx!.beginPath();
+    //     // ctx!.arc(this.x + this.width - 15 - this.radius![1]/Math.PI, this.y + 15 + this.radius![1]/Math.PI, 5, 0, 2 * Math.PI);
+    //     // ctx!.stroke();
 
-        ctx!.beginPath();
-        ctx!.arc(this.x + this.width - 15 - this.radius![2]/Math.PI, this.y + this.height -  15 - this.radius![2]/Math.PI, 5, 0, 2 * Math.PI);
-        ctx!.fill();
-        ctx!.beginPath();
-        ctx!.arc(this.x + this.width - 15 - this.radius![2]/Math.PI, this.y + this.height -  15 - this.radius![2]/Math.PI, 5, 0, 2 * Math.PI);
-        ctx!.stroke();
+    //     // ctx!.beginPath();
+    //     // ctx!.arc(this.x + this.width - 15 - this.radius![2]/Math.PI, this.y + this.height -  15 - this.radius![2]/Math.PI, 5, 0, 2 * Math.PI);
+    //     // ctx!.fill();
+    //     // ctx!.beginPath();
+    //     // ctx!.arc(this.x + this.width - 15 - this.radius![2]/Math.PI, this.y + this.height -  15 - this.radius![2]/Math.PI, 5, 0, 2 * Math.PI);
+    //     // ctx!.stroke();
 
-        ctx!.beginPath();
-        ctx!.arc(this.x + 15 + this.radius![3]/Math.PI, this.y + this.height -  15 - this.radius![3]/Math.PI, 5, 0, 2 * Math.PI);
-        ctx!.fill();
-        ctx!.beginPath();
-        ctx!.arc(this.x + 15 + this.radius![3]/Math.PI, this.y + this.height -  15 - this.radius![3]/Math.PI, 5, 0, 2 * Math.PI);
-        ctx!.stroke();
-    }
+    //     // ctx!.beginPath();
+    //     // ctx!.arc(this.x + 15 + this.radius![3]/Math.PI, this.y + this.height -  15 - this.radius![3]/Math.PI, 5, 0, 2 * Math.PI);
+    //     // ctx!.fill();
+    //     // ctx!.beginPath();
+    //     // ctx!.arc(this.x + 15 + this.radius![3]/Math.PI, this.y + this.height -  15 - this.radius![3]/Math.PI, 5, 0, 2 * Math.PI);
+    //     // ctx!.stroke();
+    // }
 }
-
-// CanvasRenderingContext2D.prototype.roundRect = function (x, y, width, height, radius) {
-//     if (width < 2 * radius) {
-//         radius = width / 2
-//     };
-//     if (height < 2 * radius) {
-//         radius = height / 2
-//     };
-//     this.beginPath();
-//     this.moveTo(x + radius, y);
-//     this.arcTo(x + width, y, x + width, y + height, radius);
-//     this.arcTo(x + width, y + height, x, y + height, radius);
-//     this.arcTo(x, y + height, x, y, radius);
-//     this.arcTo(x, y, x + width, y, radius);
-//     this.closePath();
-//     return this;
-//   }

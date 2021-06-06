@@ -84,3 +84,76 @@ export class ResizeHandle {
         return false;
     }
 }
+
+export class RadiusHandle {
+    private handleRadius = 5;
+    private x = 0;
+    private y = 0;
+    private hotSpot = 15;
+    constructor(public position: PolarCoordinate, public coords: Coords, private shapeWidth: number, private shapeHeight: number, private ctx: CanvasRenderingContext2D, private radius: number) {
+        this.createHandle();
+    }
+
+    public mouseIsOver(mouseX: number, mouseY: number): boolean {
+        const hotSpot = mouseX >= this.x - 15 && mouseX <=  this.x + 15 && mouseY >= this.y - 15 && mouseY <= this.y + 15;
+        return hotSpot;
+    }
+
+    private draw(x: number, y: number, handleRadius = 5) {
+        this.x = x;
+        this.y = y;
+        this.ctx.lineWidth = 1;
+        this.ctx.strokeStyle = '#00a7f9';
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, 5, 0, 2 * Math.PI);
+        this.ctx.fill();
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, 5, 0, 2 * Math.PI);
+        this.ctx.stroke();
+    }
+    private createHandle() {
+        this.ctx.fillStyle = '#ffffff';
+        this.ctx.strokeStyle = '#000000';
+
+        const NW = {
+            x: this.coords.x + 15 + this.radius/Math.PI,
+            y: this.coords.y + 15 + this.radius/Math.PI
+        }
+
+        const NE = {
+            x: this.coords.x + this.shapeWidth - 15 - this.radius/Math.PI,
+            y: NW.y,
+        }
+
+        const SW = {
+            x: NW.x, 
+            y: this.coords.y + this.shapeHeight - 15 - this.radius/Math.PI
+        }
+
+        const SE = {
+            x: NE.x,
+            y: SW.y
+        }
+
+        switch (this.position) {
+            case 'NW':
+                this.draw(NW.x, NW.y);
+                break;
+            case 'NE':
+                this.draw(NE.x, NE.y);
+                break;
+            case 'SW':
+                this.draw(SW.x, SW.y);
+                break;
+            case 'SE':
+                this.draw(SE.x, SE.y);
+                break;
+            case 'W':
+                break;
+            case 'E':
+                break;
+        }
+        
+    }
+    
+}
