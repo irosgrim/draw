@@ -56,6 +56,7 @@ export default class Canvas extends Vue {
     private shapes: Dictionary<Shape> = {};
     private copyShapes: string[] = [];
     private activeRadiusModifier: PolarCoordinate | null = null;
+    private activeResizeModifier: PolarCoordinate | null = null;
 
     @Watch('getRotation')
     private rotationChanged(rotation: number) {
@@ -157,6 +158,9 @@ export default class Canvas extends Vue {
         this.mouseIsDown = true;
         this.$set(this.startPoint, 'x', mouseX);
         this.$set(this.startPoint, 'y', mouseY);
+        if(this.activeResizeModifier) {
+            this.mouseIsDragging = true;
+        }
         if(this.activeRadiusModifier) {
             this.mouseIsDragging = true;
         }
@@ -165,7 +169,7 @@ export default class Canvas extends Vue {
             this.$store.commit('properties/resetProperties');
             for (const id in this.shapes) {
                 const shape = this.shapes[id];
-                if (shape.mouseIsOver(e, this.offsetX, this.offsetY)) {
+                if (shape.mouseIsOver(e, this.offsetX, this.offsetY) || this.mouseIsDragging) {
                     shape.isSelected = true;
                     if(this.selectedShapes.indexOf(shape.id) === -1) {
                         this.selectedShapes = [shape.id];
@@ -191,6 +195,9 @@ export default class Canvas extends Vue {
                     shape.isSelected = false;
                 }
             }
+            // if(this.selectedShapes.length && this.mouseIsDragging && this.activeResizeModifier) {
+            //         console.log('resizing');
+            //     }
             this.draw();
             return;
         }
@@ -209,6 +216,10 @@ export default class Canvas extends Vue {
         this.mouseIsDown = false;
         this.$set(this.endPoint, 'x', mouseX);
         this.$set(this.endPoint, 'y', mouseY);
+        if(this.activeResizeModifier) {
+            this.mouseIsDragging = false;
+            this.activeResizeModifier = null;
+        }
         if(this.activeRadiusModifier) {
             this.mouseIsDragging = false;
         }
@@ -236,6 +247,43 @@ export default class Canvas extends Vue {
         const mouseY = e.clientY - this.offsetY;
         const dx = e.movementX;
         const dy = e.movementY;
+        if(this.activeResizeModifier && this.mouseIsDragging) {
+            let dX = 0;
+            let dY = 0;
+            const originalShapeWidth = this.getWidth;
+            const originalShapeHeight = this.getHeight;
+            const originalShapeX = this.getX;
+            const originalShapeY = this.getY;
+            let newX = 0;
+            let newY = 0;
+            let newWidth = 0;
+            let newHeight = 0;
+            console.log(this.startPoint.x);
+            if(this.activeResizeModifier === 'NW') {
+                newX = mouseX;
+                newY = mouseY;
+                newWidth = this.getWidth + originalShapeX - mouseX;
+                newHeight = this.getHeight + originalShapeY - mouseY;
+                this.$store.dispatch('properties/setCurrentShape', { x: newX, y: newY, width: newWidth, height: newHeight });
+            }
+            if(this.activeResizeModifier === 'NE') {
+                newY = mouseY;
+                newWidth = mouseX - originalShapeX;
+                newHeight = this.getHeight + originalShapeY - mouseY;
+                this.$store.dispatch('properties/setCurrentShape', { y: newY, width: newWidth, height: newHeight });
+            }
+            if(this.activeResizeModifier === 'SE') {
+                newWidth = mouseX - originalShapeX;
+                newHeight = mouseY - originalShapeY;
+                this.$store.dispatch('properties/setCurrentShape', { width: newWidth, height: newHeight });
+            }
+            if(this.activeResizeModifier === 'SW') {
+                newX = mouseX;
+                newWidth = this.getWidth + originalShapeX - mouseX;
+                newHeight = mouseY - originalShapeY;
+                this.$store.dispatch('properties/setCurrentShape', { x: newX, width: newWidth, height: newHeight });
+            }
+        }
         if(this.activeRadiusModifier && this.mouseIsDragging) {
             let dX = 0;
             if( this.activeRadiusModifier === 'NW' || this.activeRadiusModifier === 'SW') {
@@ -253,12 +301,31 @@ export default class Canvas extends Vue {
                     const shape = this.shapes[id];
                     const localMouse = getMouseLocal(mouseX, mouseY, 0, 0, 1, 1, degreesToRadians(0));
                     const activeRadiusHandle = shape.mouseIsOverRadiusHandle(mouseX, mouseY);
-                    console.log('here')
+                    const activeResizeHandle = shape.mouseIsOverResizeHandle(mouseX, mouseY);
+                    if(shape.isSelected && activeResizeHandle) {
+                        this.activeResizeModifier = activeResizeHandle;
+                        switch(activeResizeHandle) {
+                            case 'NW':
+                                this.canvas?.classList.add('resize-NW');
+                                break;
+                            case 'NE':
+                                this.canvas?.classList.add('resize-NE');
+                                break;
+                            case 'SE':
+                                this.canvas?.classList.add('resize-SE');
+                                break;
+                            case 'SW':
+                                this.canvas?.classList.add('resize-SW');
+                                break;
+                        }
+                    } else {
+                        this.canvas!.className = '';
+                    }
                     if(shape.isSelected && shape.type === 'RECTANGLE' && activeRadiusHandle) { 
                         this.activeRadiusModifier = activeRadiusHandle;
                         this.canvas?.classList.add('radius-cursor');
                     } else {
-                        this.canvas?.classList.remove('radius-cursor');
+                        this.canvas!.classList.remove('radius-cursor');
                         this.activeRadiusModifier = null;
                     }
                 }
@@ -266,7 +333,7 @@ export default class Canvas extends Vue {
             this.draw();
 
         }
-        if(this.mouseIsDown && !this.activeRadiusModifier) {
+        if(this.mouseIsDown && !this.activeRadiusModifier && !this.activeResizeModifier) {
             this.draw();
             if(this.getActiveTool === 'SELECT') {
                 for (const id in this.shapes) {

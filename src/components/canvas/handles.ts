@@ -25,9 +25,19 @@ export class Mouse {
 
 export class ResizeHandle {
     private handleSize = 5;
-    constructor(public position: PolarCoordinate, private coords: Coords, private width: number, private height: number, private ctx: CanvasRenderingContext2D) {
+    public x = 0;
+    public y = 0;
+    constructor(public position: PolarCoordinate, private coords: Coords, private shapeWidth: number, private shapeHeight: number, private ctx: CanvasRenderingContext2D) {
         this.createHandle();
     }
+
+    private draw(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+        this.ctx.fillRect(x, y, this.handleSize, this.handleSize);
+        this.ctx.strokeRect(x, y, this.handleSize, this.handleSize);
+    }
+
     private createHandle() {
         this.ctx.fillStyle = '#ffffff';
         this.ctx.strokeStyle = '#000000';
@@ -38,13 +48,13 @@ export class ResizeHandle {
         }
 
         const NE = {
-            x: this.coords.x + this.width - this.handleSize / 2,
+            x: this.coords.x + this.shapeWidth - this.handleSize / 2,
             y: NW.y,
         }
 
         const SW = {
             x: NW.x, 
-            y: this.coords.y + this.height - this.handleSize / 2
+            y: this.coords.y + this.shapeHeight - this.handleSize / 2
         }
 
         const SE = {
@@ -53,22 +63,17 @@ export class ResizeHandle {
         }
 
         switch (this.position) {
-            
             case 'NW':
-                this.ctx.fillRect(NW.x, NW.y, this.handleSize, this.handleSize);
-                this.ctx.strokeRect(NW.x, NW.y, this.handleSize, this.handleSize);
+                this.draw(NW.x, NW.y);
                 break;
             case 'NE':
-                this.ctx.fillRect(NE.x, NE.y, this.handleSize, this.handleSize);
-                this.ctx.strokeRect(NE.x, NE.y, this.handleSize, this.handleSize);
+                this.draw(NE.x, NE.y);
                 break;
             case 'SW':
-                this.ctx.fillRect(SW.x, SW.y, this.handleSize, this.handleSize);
-                this.ctx.strokeRect(SW.x, SW.y, this.handleSize, this.handleSize);
+                this.draw(SW.x, SW.y);
                 break;
             case 'SE':
-                this.ctx.fillRect(SE.x, SE.y, this.handleSize, this.handleSize);
-                this.ctx.strokeRect(SE.x, SE.y, this.handleSize, this.handleSize);
+                this.draw(SE.x, SE.y);
                 break;
             case 'W':
                 this.ctx.fillRect(this.coords.x - this.handleSize, this.coords.y - this.handleSize / 2, this.handleSize, this.handleSize);
@@ -76,11 +81,25 @@ export class ResizeHandle {
                 break;
             case 'E':
                 this.ctx.fillRect(this.coords.x - this.handleSize, this.coords.y - this.handleSize / 2, this.handleSize, this.handleSize);
-                this.ctx.strokeRect(this.coords.x - this.width + this.handleSize, this.coords.y + this.height + this.handleSize / 2, this.handleSize, this.handleSize);
+                this.ctx.strokeRect(this.coords.x - this.shapeWidth + this.handleSize, this.coords.y + this.shapeHeight + this.handleSize / 2, this.handleSize, this.handleSize);
                 break;
         }
     }
-    public mouseIsOver(): boolean {
+    public mouseIsOver(mouseX: number, mouseY: number): boolean {
+        const hotSpotNW = mouseX >= this.x - 15 && mouseX <= this.x + 2.5 && mouseY >= this.y - 15 && mouseY <= this.y + 2.5;
+        const hotSpotNE = mouseX >= this.x - 2.5 && mouseX <= this.x + 15 && mouseY >= this.y - 15 && mouseY <= this.y + 15;
+        const hotSpotSE = mouseX >= this.x - 2.5 && mouseX <= this.x + 15 && mouseY >= this.y - 15 && mouseY <= this.y + 15;
+        const hotSpotSW = mouseX >= this.x - 15 && mouseX <= this.x + 2.5 && mouseY >= this.y - 15 && mouseY <= this.y + 15;
+        switch (this.position) {
+            case 'NW':
+                return hotSpotNW;
+            case 'NE':
+                return hotSpotNE;
+            case 'SE':
+                return hotSpotSE;
+            case 'SW':
+                return hotSpotSW;
+        }
         return false;
     }
 }
@@ -95,20 +114,19 @@ export class RadiusHandle {
     }
 
     public mouseIsOver(mouseX: number, mouseY: number): boolean {
-        const hotSpot = mouseX >= this.x - 15 && mouseX <=  this.x + 15 && mouseY >= this.y - 15 && mouseY <= this.y + 15;
-        return hotSpot;
+        return mouseX >= this.x - this.hotSpot && mouseX <=  this.x + this.hotSpot && mouseY >= this.y - this.hotSpot && mouseY <= this.y + this.hotSpot;
     }
 
-    private draw(x: number, y: number, handleRadius = 5) {
+    private draw(x: number, y: number) {
         this.x = x;
         this.y = y;
         this.ctx.lineWidth = 1;
         this.ctx.strokeStyle = '#00a7f9';
         this.ctx.beginPath();
-        this.ctx.arc(x, y, 5, 0, 2 * Math.PI);
+        this.ctx.arc(x, y, this.handleRadius, 0, 2 * Math.PI);
         this.ctx.fill();
         this.ctx.beginPath();
-        this.ctx.arc(x, y, 5, 0, 2 * Math.PI);
+        this.ctx.arc(x, y, this.handleRadius, 0, 2 * Math.PI);
         this.ctx.stroke();
     }
     private createHandle() {
