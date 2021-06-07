@@ -260,7 +260,7 @@ export class Shape {
         ctx.lineWidth = 1;
         ctx.strokeStyle = '#00a7f9';
         ctx.strokeRect(this.x, this.y, this.width, this.height);
-        const handleCoordinate = ["NW", "NE", "SW", "SE"];
+        const handleCoordinate = ["NW", "NE", "SW", "SE", "N", "S", "W", "E"];
         this.resizeHandles = [];
         (handleCoordinate as PolarCoordinate[]).forEach(polarPosition=> {
             this.resizeHandles = [...this.resizeHandles, new ResizeHandle(polarPosition, {x: this.x, y: this.y}, this.width, this.height, ctx)];

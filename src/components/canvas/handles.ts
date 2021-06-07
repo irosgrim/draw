@@ -24,7 +24,7 @@ export class Mouse {
 }
 
 export class ResizeHandle {
-    private handleSize = 5;
+    private handleSize = 9;
     public x = 0;
     public y = 0;
     constructor(public position: PolarCoordinate, private coords: Coords, private shapeWidth: number, private shapeHeight: number, private ctx: CanvasRenderingContext2D) {
@@ -40,7 +40,27 @@ export class ResizeHandle {
 
     private createHandle() {
         this.ctx.fillStyle = '#ffffff';
-        this.ctx.strokeStyle = '#000000';
+        this.ctx.strokeStyle = '#00a7f9';
+
+        const N = {
+            x: this.coords.x + this.shapeWidth / 2 - this.handleSize / 2,
+            y: this.coords.y - this.handleSize / 2
+        }
+
+        const S = {
+            x: this.coords.x + this.shapeWidth / 2 - this.handleSize / 2,
+            y: this.coords.y + this.shapeHeight - this.handleSize / 2
+        }
+
+        const W = {
+            x: this.coords.x - this.handleSize / 2,
+            y: this.coords.y + this.shapeHeight / 2 - this.handleSize / 2
+        }
+
+        const E = {
+            x: this.coords.x + this.shapeWidth - this.handleSize / 2,
+            y: this.coords.y + this.shapeHeight / 2 - this.handleSize / 2
+        }
 
         const NW = {
             x: this.coords.x - this.handleSize / 2,
@@ -63,6 +83,18 @@ export class ResizeHandle {
         }
 
         switch (this.position) {
+            case 'N':
+                this.draw(N.x, N.y);
+                break;
+            case 'S':
+                this.draw(S.x, S.y);
+                break;
+            case 'W':
+                this.draw(W.x, W.y);
+                break;
+            case 'E':
+                this.draw(E.x, E.y);
+                break;
             case 'NW':
                 this.draw(NW.x, NW.y);
                 break;
@@ -75,22 +107,26 @@ export class ResizeHandle {
             case 'SE':
                 this.draw(SE.x, SE.y);
                 break;
-            case 'W':
-                this.ctx.fillRect(this.coords.x - this.handleSize, this.coords.y - this.handleSize / 2, this.handleSize, this.handleSize);
-                this.ctx.strokeRect(this.coords.x - this.handleSize, this.coords.y - this.handleSize / 2, this.handleSize, this.handleSize);
-                break;
-            case 'E':
-                this.ctx.fillRect(this.coords.x - this.handleSize, this.coords.y - this.handleSize / 2, this.handleSize, this.handleSize);
-                this.ctx.strokeRect(this.coords.x - this.shapeWidth + this.handleSize, this.coords.y + this.shapeHeight + this.handleSize / 2, this.handleSize, this.handleSize);
-                break;
         }
     }
     public mouseIsOver(mouseX: number, mouseY: number): boolean {
+        const hotSpotN = mouseX >= this.x - this.shapeWidth / 2 + 20 && mouseX <= this.x + this.shapeWidth / 2 - 20 && mouseY >= this.y - this.handleSize && mouseY <= this.y + this.handleSize;
+        const hotSpotS = mouseX >= this.x - this.shapeWidth / 2 + 20 && mouseX <= this.x + this.shapeWidth / 2 - 20 && mouseY >= this.y - this.handleSize && mouseY <= this.y + this.handleSize;
+        const hotSpotW = mouseX >= this.x - this.handleSize && mouseX <= this.x + this.handleSize && mouseY >= this.y - this.shapeHeight / 2 + 20 && mouseY <= this.y + this.shapeHeight / 2 - 20;
+        const hotSpotE = mouseX >= this.x - this.handleSize && mouseX <= this.x + this.handleSize && mouseY >= this.y - this.shapeHeight / 2 + 20 && mouseY <= this.y + this.shapeHeight / 2 - 20;
         const hotSpotNW = mouseX >= this.x - 15 && mouseX <= this.x + 2.5 && mouseY >= this.y - 15 && mouseY <= this.y + 2.5;
         const hotSpotNE = mouseX >= this.x - 2.5 && mouseX <= this.x + 15 && mouseY >= this.y - 15 && mouseY <= this.y + 15;
         const hotSpotSE = mouseX >= this.x - 2.5 && mouseX <= this.x + 15 && mouseY >= this.y - 15 && mouseY <= this.y + 15;
         const hotSpotSW = mouseX >= this.x - 15 && mouseX <= this.x + 2.5 && mouseY >= this.y - 15 && mouseY <= this.y + 15;
         switch (this.position) {
+            case 'N':
+                return hotSpotN;
+            case 'S':
+                return hotSpotS;
+            case 'W':
+                return hotSpotW;
+            case 'E':
+                return hotSpotE;
             case 'NW':
                 return hotSpotNW;
             case 'NE':
@@ -100,7 +136,6 @@ export class ResizeHandle {
             case 'SW':
                 return hotSpotSW;
         }
-        return false;
     }
 }
 

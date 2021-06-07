@@ -251,7 +251,24 @@ export default class Canvas extends Vue {
             let newY = 0;
             let newWidth = 0;
             let newHeight = 0;
-            console.log(this.startPoint.x);
+            if(this.activeResizeModifier === 'N') {
+                newY = mouseY;
+                newHeight = this.getHeight + originalShapeY - mouseY > 0 ? this.getHeight + originalShapeY - mouseY : Math.abs(this.getHeight + originalShapeY - mouseY);
+                this.$store.dispatch('properties/setCurrentShape', { y: newY, height: newHeight });
+            }
+            if(this.activeResizeModifier === 'S') {
+                newHeight = mouseY - originalShapeY > 0 ? mouseY - originalShapeY  : Math.abs(mouseY - originalShapeY);
+                this.$store.dispatch('properties/setCurrentShape', { height: newHeight });
+            }
+            if(this.activeResizeModifier === 'W') {
+                newX = mouseX;
+                newWidth = this.getWidth + originalShapeX - mouseX;
+                this.$store.dispatch('properties/setCurrentShape', { x: newX, width: newWidth });
+            }
+            if(this.activeResizeModifier === 'E') {
+                newWidth = mouseX - originalShapeX > 0 ? mouseX - originalShapeX  : Math.abs(mouseX - originalShapeX);
+                this.$store.dispatch('properties/setCurrentShape', { width: newWidth });
+            }
             if(this.activeResizeModifier === 'NW') {
                 newX = mouseX;
                 newY = mouseY;
@@ -294,11 +311,19 @@ export default class Canvas extends Vue {
                 for (const id in this.shapes) {
                     const shape = this.shapes[id];
                     const localMouse = getMouseLocal(mouseX, mouseY, 0, 0, 1, 1, degreesToRadians(0));
-                    const activeRadiusHandle = shape.mouseIsOverRadiusHandle(mouseX, mouseY);
-                    const activeResizeHandle = shape.width >= 50 && shape.height>= 50 && shape.mouseIsOverResizeHandle(mouseX, mouseY);
+                    const activeRadiusHandle = shape.width >= 50 && shape.height>= 50 && shape.mouseIsOverRadiusHandle(mouseX, mouseY);
+                    const activeResizeHandle = shape.mouseIsOverResizeHandle(mouseX, mouseY);
                     if(shape.isSelected && activeResizeHandle) {
                         this.activeResizeModifier = activeResizeHandle;
                         switch(activeResizeHandle) {
+                            case 'N':
+                            case 'S':
+                                this.canvas?.classList.add('resize-NS');
+                                break;
+                            case 'W':
+                            case 'E':
+                                this.canvas?.classList.add('resize-WE');
+                                break;
                             case 'NW':
                                 this.canvas?.classList.add('resize-NW');
                                 break;
@@ -323,8 +348,7 @@ export default class Canvas extends Vue {
                         this.activeRadiusModifier = null;
                     }
                 }
-            }, 20);
-            // this.draw();
+            }, 10);
 
         }
         if(this.mouseIsDown && !this.activeRadiusModifier && !this.activeResizeModifier) {
