@@ -11,42 +11,49 @@ export const toolbarStore: ToolbarStore = {
     tools: {
         SELECT: {
             label: 'SELECT',
+            shortcut: 'V',
             icon: 'select.svg',
             selected: true,
             disabled: false
         },
         RECTANGLE: {
             label: 'RECTANGLE',
+            shortcut: 'R',
             icon: 'rectangle.svg',
             selected: false,
             disabled: false
         },
         CIRCLE: {
             label: 'CIRCLE',
+            shortcut: 'O',
             icon: 'circle.svg',
             selected: false,
             disabled: false
         },
         LINE: {
             label: 'LINE',
+            shortcut: 'L',
             icon: 'line.svg',
             selected: false,
             disabled: false
         },
         POLYGON: {
             label: 'POLYGON',
+            shortcut: '',
             icon: 'polygon.svg',
             selected: false,
             disabled: false
         },
         PAN: {
             label: 'PAN',
+            shortcut: 'H',
             icon: 'pan.svg',
             selected: false,
             disabled: true
         },
         LAYERS: {
             label: 'LAYERS',
+            shortcut: '',
             icon: 'layers.svg',
             selected: false,
             disabled: true

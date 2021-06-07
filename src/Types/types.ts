@@ -1,14 +1,6 @@
 export type Properties = 'STROKE' | 'FILL' | 'CANVAS' | 'SHADOW';
 export type ShapeName = 'RECTANGLE' | 'CIRCLE' | 'LINE';
 export type PolarCoordinate = 'NW' | 'NE' | 'SW' | 'SE' | 'N' | 'S' | 'W' | 'E';
-
-export interface DefaultMenu {
-    label: string;
-    icon: string;
-    selected: boolean;
-    disabled: boolean;
-}
-
 export interface Dictionary<T> {
     [key: string] : T;
 }
@@ -45,4 +37,12 @@ export interface Shadow {
     x: number;
     y: number;
     blur: number;
+}
+
+export interface DefaultMenu {
+    label: string;
+    shortcut: string;
+    icon: string;
+    selected: boolean;
+    disabled: boolean;
 }

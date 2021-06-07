@@ -10,6 +10,7 @@
                     @click="$store.commit('toolbar/setActiveTool', tool.label)"
                     :class="{selected: getActiveTool === tool.label, disabled: tool.disabled}"
                     :disabled="tool.disabled"
+                    :title="tool.shortcut"
                 >
                     <img :src="getIcon(tool.icon)" :alt="tool.label" class="toolbar-icon">
                 </button>
