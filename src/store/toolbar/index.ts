@@ -33,6 +33,12 @@ export const toolbarStore: ToolbarStore = {
             selected: false,
             disabled: false
         },
+        POLYGON: {
+            label: 'POLYGON',
+            icon: 'polygon.svg',
+            selected: false,
+            disabled: false
+        },
         PAN: {
             label: 'PAN',
             icon: 'pan.svg',

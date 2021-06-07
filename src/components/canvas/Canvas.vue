@@ -244,6 +244,7 @@ export default class Canvas extends Vue {
         const dx = e.movementX;
         const dy = e.movementY;
         if(this.activeResizeModifier && this.mouseIsDragging) {
+            this.activeRadiusModifier = null;
             const originalShapeX = this.getX;
             const originalShapeY = this.getY;
             let newX = 0;
@@ -254,8 +255,8 @@ export default class Canvas extends Vue {
             if(this.activeResizeModifier === 'NW') {
                 newX = mouseX;
                 newY = mouseY;
-                newWidth = this.getWidth + originalShapeX - mouseX > 0 ? this.getHeight + originalShapeY - mouseY : 1;
-                newHeight = this.getHeight + originalShapeY - mouseY > 0 ? this.getHeight + originalShapeY - mouseY : 1;
+                newWidth = this.getWidth + originalShapeX - mouseX > 0 ? this.getWidth + originalShapeX - mouseX : Math.abs(this.getWidth + originalShapeX - mouseX);
+                newHeight = this.getHeight + originalShapeY - mouseY > 0 ? this.getHeight + originalShapeY - mouseY : Math.abs(this.getHeight + originalShapeY - mouseY);
                 this.$store.dispatch('properties/setCurrentShape', { x: newX, y: newY, width: newWidth, height: newHeight });
             }
             if(this.activeResizeModifier === 'NE') {
@@ -271,12 +272,13 @@ export default class Canvas extends Vue {
             }
             if(this.activeResizeModifier === 'SW') {
                 newX = mouseX;
-                newWidth = this.getWidth + originalShapeX - mouseX > 0 ? this.getHeight + originalShapeY - mouseY : 1;
+                newWidth = this.getWidth + originalShapeX - mouseX > 0 ? this.getWidth + originalShapeX - mouseX : 1;
                 newHeight = mouseY - originalShapeY > 0 ?  mouseY - originalShapeY : 1;
                 this.$store.dispatch('properties/setCurrentShape', { x: newX, width: newWidth, height: newHeight });
             }
         }
         if(this.activeRadiusModifier && this.mouseIsDragging) {
+            this.activeResizeModifier = null;
             let dX = 0;
             if( this.activeRadiusModifier === 'NW' || this.activeRadiusModifier === 'SW') {
                 dX = mouseX - this.startPoint.x;
@@ -322,7 +324,7 @@ export default class Canvas extends Vue {
                     }
                 }
             }, 20);
-            this.draw();
+            // this.draw();
 
         }
         if(this.mouseIsDown && !this.activeRadiusModifier && !this.activeResizeModifier) {
