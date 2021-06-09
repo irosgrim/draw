@@ -42,7 +42,7 @@ export const toolbarStore: ToolbarStore = {
             shortcut: '',
             icon: 'polygon.svg',
             selected: false,
-            disabled: false
+            disabled: true
         },
         PAN: {
             label: 'PAN',
