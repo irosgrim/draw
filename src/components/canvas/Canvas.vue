@@ -167,7 +167,6 @@ export default class Canvas extends Vue {
         if(this.getActiveTool === 'SELECT') {
             this.selectedShapes = [];
             this.$store.commit('properties/resetProperties');
-            console.log({mouseX, mouseY});
             for (const id in this.shapes) {
                 const shape = this.shapes[id];
                 const mouseIsOverShape = shape.mouseIsOver(e, this.offsetX, this.offsetY);
