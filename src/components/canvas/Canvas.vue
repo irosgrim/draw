@@ -167,9 +167,11 @@ export default class Canvas extends Vue {
         if(this.getActiveTool === 'SELECT') {
             this.selectedShapes = [];
             this.$store.commit('properties/resetProperties');
+            console.log({mouseX, mouseY});
             for (const id in this.shapes) {
                 const shape = this.shapes[id];
-                if (shape.mouseIsOver(e, this.offsetX, this.offsetY) || this.activeResizeModifier) {
+                const mouseIsOverShape = shape.mouseIsOver(e, this.offsetX, this.offsetY);
+                if (mouseIsOverShape || (this.activeResizeModifier && shape.isSelected)) {
                     shape.isSelected = true;
                     if(this.selectedShapes.indexOf(shape.id) === -1) {
                         this.selectedShapes = [shape.id];
@@ -207,14 +209,15 @@ export default class Canvas extends Vue {
     private mouseUp(e: MouseEvent): void {
         e.preventDefault();
         e.stopPropagation();
+        this.mouseIsDown = false;
         this.mouseIsDragging = false;
         this.activeResizeModifier = null;
         this.activeRadiusModifier = null;
         const mouseX = e.clientX - this.offsetX;
         const mouseY = e.clientY - this.offsetY;
-        this.mouseIsDown = false;
         this.$set(this.endPoint, 'x', mouseX);
         this.$set(this.endPoint, 'y', mouseY);
+
         // if(this.activeResizeModifier) {
         //     this.mouseIsDragging = false;
         //     this.activeResizeModifier = null;
@@ -317,7 +320,6 @@ export default class Canvas extends Vue {
                     const activeRadiusHandle = shape.width >= 50 && shape.height>= 50 && shape.mouseIsOverRadiusHandle(mouseX, mouseY);
                     const activeResizeHandle = shape.mouseIsOverResizeHandle(mouseX, mouseY);
                     const localMouse = getMouseLocal(mouseX, mouseY, shape.x, shape.y, 1, 1, degreesToRadians(this.getRotation));
-                    console.log(localMouse)
                     // setTransform(this.ctx!, shape.x, shape.y, 1, 1, shape.rotation);
                     if(shape.isSelected && activeResizeHandle) {
                         this.activeResizeModifier = activeResizeHandle;
