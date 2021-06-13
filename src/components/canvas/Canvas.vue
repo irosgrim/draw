@@ -217,13 +217,6 @@ export default class Canvas extends Vue {
         this.$set(this.endPoint, 'x', mouseX);
         this.$set(this.endPoint, 'y', mouseY);
 
-        // if(this.activeResizeModifier) {
-        //     this.mouseIsDragging = false;
-        //     this.activeResizeModifier = null;
-        // }
-        // if(this.activeRadiusModifier) {
-        //     this.mouseIsDragging = false;
-        // }
         if(['RECTANGLE', 'CIRCLE', 'LINE'].includes(this.getActiveTool)) {
             const fill = this.getShapeProperties.fill;
             const stroke = this.getShapeProperties.stroke;
@@ -249,67 +242,10 @@ export default class Canvas extends Vue {
         const dx = e.movementX;
         const dy = e.movementY;
         if(this.activeResizeModifier && this.mouseIsDragging) {
-            this.activeRadiusModifier = null;
-            const originalShapeX = this.getX;
-            const originalShapeY = this.getY;
-            let newX = 0;
-            let newY = 0;
-            let newWidth = 0;
-            let newHeight = 0;
-            if(this.activeResizeModifier === 'N') {
-                newY = mouseY;
-                newHeight = this.getHeight + originalShapeY - mouseY > 0 ? this.getHeight + originalShapeY - mouseY : Math.abs(this.getHeight + originalShapeY - mouseY);
-                this.$store.dispatch('properties/setCurrentShape', { y: newY, height: newHeight });
-            }
-            if(this.activeResizeModifier === 'S') {
-                newHeight = mouseY - originalShapeY > 0 ? mouseY - originalShapeY  : Math.abs(mouseY - originalShapeY);
-                this.$store.dispatch('properties/setCurrentShape', { height: newHeight });
-            }
-            if(this.activeResizeModifier === 'W') {
-                newX = mouseX;
-                newWidth = this.getWidth + originalShapeX - mouseX;
-                this.$store.dispatch('properties/setCurrentShape', { x: newX, width: newWidth });
-            }
-            if(this.activeResizeModifier === 'E') {
-                newWidth = mouseX - originalShapeX > 0 ? mouseX - originalShapeX  : Math.abs(mouseX - originalShapeX);
-                this.$store.dispatch('properties/setCurrentShape', { width: newWidth });
-            }
-            if(this.activeResizeModifier === 'NW') {
-                newX = mouseX;
-                newY = mouseY;
-                newWidth = this.getWidth + originalShapeX - mouseX > 0 ? this.getWidth + originalShapeX - mouseX : Math.abs(this.getWidth + originalShapeX - mouseX);
-                newHeight = this.getHeight + originalShapeY - mouseY > 0 ? this.getHeight + originalShapeY - mouseY : Math.abs(this.getHeight + originalShapeY - mouseY);
-                this.$store.dispatch('properties/setCurrentShape', { x: newX, y: newY, width: newWidth, height: newHeight });
-            }
-            if(this.activeResizeModifier === 'NE') {
-                newY = mouseY;
-                newWidth = mouseX - originalShapeX > 0 ? mouseX - originalShapeX : 1;
-                newHeight = this.getHeight + originalShapeY - mouseY > 0 ? this.getHeight + originalShapeY - mouseY : 1;
-                this.$store.dispatch('properties/setCurrentShape', { y: newY, width: newWidth, height: newHeight });
-            }
-            if(this.activeResizeModifier === 'SE') {
-                newWidth = mouseX - originalShapeX;
-                newHeight = mouseY - originalShapeY > 0 ?  mouseY - originalShapeY : 1;
-                this.$store.dispatch('properties/setCurrentShape', { width: newWidth, height: newHeight });
-            }
-            if(this.activeResizeModifier === 'SW') {
-                newX = mouseX;
-                newWidth = this.getWidth + originalShapeX - mouseX > 0 ? this.getWidth + originalShapeX - mouseX : 1;
-                newHeight = mouseY - originalShapeY > 0 ?  mouseY - originalShapeY : 1;
-                this.$store.dispatch('properties/setCurrentShape', { x: newX, width: newWidth, height: newHeight });
-            }
+            this.resize(mouseX, mouseY);
         }
         if(this.activeRadiusModifier && this.mouseIsDragging) {
-            this.activeResizeModifier = null;
-            let dX = 0;
-            if( this.activeRadiusModifier === 'NW' || this.activeRadiusModifier === 'SW') {
-                dX = mouseX - this.startPoint.x;
-            } else {
-                dX = this.startPoint.x - mouseX;
-            }
-            if(dX > 0 && dX <= this.shapes[this.getShapeId].width / 2 && dX <= this.shapes[this.getShapeId].height / 2) {
-                this.$store.dispatch('properties/setCurrentShape', { radius: [dX, dX, dX, dX]});
-            }
+            this.makeRadius(mouseX, mouseY);
         }
         if(!this.mouseIsDown && this.selectedShapes.length) {
 
@@ -391,6 +327,69 @@ export default class Canvas extends Vue {
                 this.drawShapeGhost({x: mouseX, y: mouseY}, this.ctx!, this.getActiveTool);
             }
         }
+    }
+    makeRadius(mouseX, mouseY) {
+        this.activeResizeModifier = null;
+            let dX = 0;
+            if( this.activeRadiusModifier === 'NW' || this.activeRadiusModifier === 'SW') {
+                dX = mouseX - this.startPoint.x;
+            } else {
+                dX = this.startPoint.x - mouseX;
+            }
+            if(dX > 0 && dX <= this.shapes[this.getShapeId].width / 2 && dX <= this.shapes[this.getShapeId].height / 2) {
+                this.$store.dispatch('properties/setCurrentShape', { radius: [dX, dX, dX, dX]});
+            }
+    }
+    private resize(mouseX: number, mouseY: number) {
+        this.activeRadiusModifier = null;
+            const originalShapeX = this.getX;
+            const originalShapeY = this.getY;
+            let newX = 0;
+            let newY = 0;
+            let newWidth = 0;
+            let newHeight = 0;
+            if(this.activeResizeModifier === 'N') {
+                newY = mouseY;
+                newHeight = this.getHeight + originalShapeY - mouseY > 0 ? this.getHeight + originalShapeY - mouseY : Math.abs(this.getHeight + originalShapeY - mouseY);
+                this.$store.dispatch('properties/setCurrentShape', { y: newY, height: newHeight });
+            }
+            if(this.activeResizeModifier === 'S') {
+                newHeight = mouseY - originalShapeY > 0 ? mouseY - originalShapeY  : Math.abs(mouseY - originalShapeY);
+                this.$store.dispatch('properties/setCurrentShape', { height: newHeight });
+            }
+            if(this.activeResizeModifier === 'W') {
+                newX = mouseX;
+                newWidth = this.getWidth + originalShapeX - mouseX;
+                this.$store.dispatch('properties/setCurrentShape', { x: newX, width: newWidth });
+            }
+            if(this.activeResizeModifier === 'E') {
+                newWidth = mouseX - originalShapeX > 0 ? mouseX - originalShapeX  : Math.abs(mouseX - originalShapeX);
+                this.$store.dispatch('properties/setCurrentShape', { width: newWidth });
+            }
+            if(this.activeResizeModifier === 'NW') {
+                newX = mouseX;
+                newY = mouseY;
+                newWidth = this.getWidth + originalShapeX - mouseX > 0 ? this.getWidth + originalShapeX - mouseX : Math.abs(this.getWidth + originalShapeX - mouseX);
+                newHeight = this.getHeight + originalShapeY - mouseY > 0 ? this.getHeight + originalShapeY - mouseY : Math.abs(this.getHeight + originalShapeY - mouseY);
+                this.$store.dispatch('properties/setCurrentShape', { x: newX, y: newY, width: newWidth, height: newHeight });
+            }
+            if(this.activeResizeModifier === 'NE') {
+                newY = mouseY;
+                newWidth = mouseX - originalShapeX > 0 ? mouseX - originalShapeX : 1;
+                newHeight = this.getHeight + originalShapeY - mouseY > 0 ? this.getHeight + originalShapeY - mouseY : 1;
+                this.$store.dispatch('properties/setCurrentShape', { y: newY, width: newWidth, height: newHeight });
+            }
+            if(this.activeResizeModifier === 'SE') {
+                newWidth = mouseX - originalShapeX;
+                newHeight = mouseY - originalShapeY > 0 ?  mouseY - originalShapeY : 1;
+                this.$store.dispatch('properties/setCurrentShape', { width: newWidth, height: newHeight });
+            }
+            if(this.activeResizeModifier === 'SW') {
+                newX = mouseX;
+                newWidth = this.getWidth + originalShapeX - mouseX > 0 ? this.getWidth + originalShapeX - mouseX : 1;
+                newHeight = mouseY - originalShapeY > 0 ?  mouseY - originalShapeY : 1;
+                this.$store.dispatch('properties/setCurrentShape', { x: newX, width: newWidth, height: newHeight });
+            }
     }
 
     public onKeyDown(e: KeyboardEvent) {

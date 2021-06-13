@@ -111,12 +111,12 @@ export class ResizeHandle {
     }
     public mouseIsOver(mouseX: number, mouseY: number): boolean {
         const hotSpotN = mouseX >= this.x - this.shapeWidth / 2 + 20 && mouseX <= this.x + this.shapeWidth / 2 - 20 && mouseY >= this.y - this.handleSize && mouseY <= this.y + this.handleSize / 2;
-        const hotSpotS = mouseX >= this.x - this.shapeWidth / 2 + 20 && mouseX <= this.x + this.shapeWidth / 2 - 20 && mouseY >= this.y - this.handleSize && mouseY <= this.y + this.handleSize / 2;
+        const hotSpotS = mouseX >= this.x - this.shapeWidth / 2 + 20 && mouseX <= this.x + this.shapeWidth / 2 - 20 && mouseY <= this.y + this.handleSize + this.handleSize / 2 && mouseY >= this.y ;
         const hotSpotW = mouseX >= this.x - this.handleSize && mouseX <= this.x + this.handleSize / 2 && mouseY >= this.y - this.shapeHeight / 2 + 20 && mouseY <= this.y + this.shapeHeight / 2 - 20;
-        const hotSpotE = mouseX >= this.x - this.handleSize && mouseX <= this.x + this.handleSize / 2 && mouseY >= this.y - this.shapeHeight / 2 + 20 && mouseY <= this.y + this.shapeHeight / 2 - 20;
+        const hotSpotE = mouseX >= this.x && mouseX <= this.x + this.handleSize  + this.handleSize / 2 && mouseY >= this.y - this.shapeHeight / 2 + 20 && mouseY <= this.y + this.shapeHeight / 2 - 20;
         const hotSpotNW = mouseX >= this.x - 15 && mouseX <= this.x + 2.5 && mouseY >= this.y - 15 && mouseY <= this.y + 2.5;
-        const hotSpotNE = mouseX >= this.x - 2.5 && mouseX <= this.x + 15 && mouseY >= this.y - 15 && mouseY <= this.y + 15;
-        const hotSpotSE = mouseX >= this.x - 2.5 && mouseX <= this.x + 15 && mouseY >= this.y - 15 && mouseY <= this.y + 15;
+        const hotSpotNE = mouseX >= this.x && mouseX <= this.x + 15 && mouseY >= this.y - 15 && mouseY <= this.y + 15;
+        const hotSpotSE = mouseX >= this.x && mouseX <= this.x + 15 && mouseY >= this.y - 15 && mouseY <= this.y + 15;
         const hotSpotSW = mouseX >= this.x - 15 && mouseX <= this.x + 2.5 && mouseY >= this.y - 15 && mouseY <= this.y + 15;
         switch (this.position) {
             case 'N':
