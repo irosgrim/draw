@@ -13,6 +13,7 @@ import {
 import { Color } from '@/store/properties/types';
 import { Tool, ToolbarStore } from '@/store/toolbar/types';
 import { degreesToRadians, getMouseLocal, setTransform } from '@/helpers/geometry';
+import { drawShapeGhost } from './shapeGhost';
 
 const properties = namespace('properties');
 const toolbar = namespace('toolbar');
@@ -220,8 +221,7 @@ export default class Canvas extends Vue {
         if(['RECTANGLE', 'CIRCLE', 'LINE'].includes(this.getActiveTool)) {
             const fill = this.getShapeProperties.fill;
             const stroke = this.getShapeProperties.stroke;
-            // @ts-ignore
-            const s = new Shape(this.getActiveTool, { coords: {start: {...this.startPoint}, end: {x: mouseX, y: mouseY}}, fill: fill, stroke });
+            const s = new Shape((this.getActiveTool as ShapeName), { coords: {start: {...this.startPoint}, end: {x: mouseX, y: mouseY}}, fill: fill, stroke });
             this.$set(this.shapes, s.id, s);
             this.draw();
         }
@@ -248,38 +248,14 @@ export default class Canvas extends Vue {
             this.makeRadius(mouseX, mouseY);
         }
         if(!this.mouseIsDown && this.selectedShapes.length) {
-
             this.debounce(() => {
                 for (const id in this.shapes) {
                     const shape = this.shapes[id];
                     const activeRadiusHandle = shape.width >= 50 && shape.height>= 50 && shape.mouseIsOverRadiusHandle(mouseX, mouseY);
                     const activeResizeHandle = shape.mouseIsOverResizeHandle(mouseX, mouseY);
-                    const localMouse = getMouseLocal(mouseX, mouseY, shape.x, shape.y, 1, 1, degreesToRadians(this.getRotation));
-                    // setTransform(this.ctx!, shape.x, shape.y, 1, 1, shape.rotation);
                     if(shape.isSelected && activeResizeHandle) {
                         this.activeResizeModifier = activeResizeHandle;
-                        switch(activeResizeHandle) {
-                            case 'N':
-                            case 'S':
-                                this.canvas?.classList.add('resize-NS');
-                                break;
-                            case 'W':
-                            case 'E':
-                                this.canvas?.classList.add('resize-WE');
-                                break;
-                            case 'NW':
-                                this.canvas?.classList.add('resize-NW');
-                                break;
-                            case 'NE':
-                                this.canvas?.classList.add('resize-NE');
-                                break;
-                            case 'SE':
-                                this.canvas?.classList.add('resize-SE');
-                                break;
-                            case 'SW':
-                                this.canvas?.classList.add('resize-SW');
-                                break;
-                        }
+                        this.setResizeMousePointer(activeResizeHandle, this.canvas!);
                     } else {
                         this.activeResizeModifier = null;
                         this.canvas!.className = '';
@@ -323,12 +299,35 @@ export default class Canvas extends Vue {
                 return;
             }
             if(['RECTANGLE', 'CIRCLE', 'LINE'].includes(this.getActiveTool)) {
-                // @ts-ignore
-                this.drawShapeGhost({x: mouseX, y: mouseY}, this.ctx!, this.getActiveTool);
+                drawShapeGhost(this.startPoint.x, this.startPoint.y, mouseX, mouseY, this.ctx!, (this.getActiveTool as ShapeName))
             }
         }
     }
-    makeRadius(mouseX, mouseY) {
+    private setResizeMousePointer(activeResizeHandle: PolarCoordinate, canvasElement: HTMLCanvasElement) {
+        switch(activeResizeHandle) {
+            case 'N':
+            case 'S':
+                canvasElement.classList.add('resize-NS');
+                break;
+            case 'W':
+            case 'E':
+                canvasElement.classList.add('resize-WE');
+                break;
+            case 'NW':
+                canvasElement.classList.add('resize-NW');
+                break;
+            case 'NE':
+                canvasElement.classList.add('resize-NE');
+                break;
+            case 'SE':
+                canvasElement.classList.add('resize-SE');
+                break;
+            case 'SW':
+                canvasElement.classList.add('resize-SW');
+                break;
+        }
+    }
+    private makeRadius(mouseX: number, mouseY: number) {
         this.activeResizeModifier = null;
             let dX = 0;
             if( this.activeRadiusModifier === 'NW' || this.activeRadiusModifier === 'SW') {
@@ -520,43 +519,6 @@ export default class Canvas extends Vue {
             } else {
                 return false;
             }
-    }
-
-    private drawShapeGhost(coords: {x: number, y: number}, ctx: CanvasRenderingContext2D, shape: ShapeName): void {
-        ctx!.setLineDash([5, 3]);
-        ctx!.strokeStyle = 'black';
-        ctx!.lineWidth = 1;
-        ctx!.fillStyle = 'rgba(255, 191, 203, 0.3)';
-        switch(shape) {
-            case 'RECTANGLE':
-                ctx.beginPath();
-                ctx!.fillRect(this.startPoint.x, this.startPoint.y, coords.x - this.startPoint.x, coords.y - this.startPoint.y);
-                ctx!.strokeRect(this.startPoint.x, this.startPoint.y,  coords.x - this.startPoint.x, coords.y - this.startPoint.y);
-                ctx.closePath();
-                break;
-            case 'CIRCLE':
-                ctx.beginPath();
-                ctx.ellipse(
-                    coords.x - ((coords.x - this.startPoint.x) / 2), 
-                    coords.y - ((coords.y - this.startPoint.y) / 2), 
-                    Math.abs( (coords.x - this.startPoint.x) / 2), 
-                    Math.abs((coords.y - this.startPoint.y) / 2), 
-                    0,
-                    0,
-                    2*Math.PI
-                );
-                ctx.stroke();
-                ctx.closePath();
-                break;
-            case 'LINE':
-                ctx.moveTo(coords.x, coords.y);
-                ctx!.strokeStyle = 'rgba(255, 191, 255, 0.9)';
-                ctx.beginPath();
-                ctx.lineTo(this.endPoint.x, this.endPoint.y);
-                ctx.stroke()
-                ctx.closePath();
-                break;
-        }
     }
 
     private draw(): void {

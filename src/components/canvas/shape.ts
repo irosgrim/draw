@@ -1,5 +1,5 @@
-import { degreesToRadians, getMouseLocal, mouseIsInsideEllipse, mouseIsInsideRectangle, setTransform } from '@/helpers/geometry';
-import { Coords, PolarCoordinate, Shadow, ShapeCoords, ShapeName, Stroke } from '@/Types/types';
+import { degreesToRadians, mouseIsInsideEllipse, mouseIsInsideRectangle } from '@/helpers/geometry';
+import { PolarCoordinate, Shadow, ShapeCoords, ShapeName, Stroke } from '@/Types/types';
 import { uid } from 'uid';
 import { RadiusHandle, ResizeHandle } from './handles';
 
@@ -24,10 +24,11 @@ export class Shape {
     
     constructor(type: ShapeName, shapeProperties: {coords?: ShapeCoords, stroke?: Stroke, fill?: string}, copyShape?: {x: number, y: number, h: number, w: number}) {
         this.id = uid(12);
-        // const localMouse = getMouseLocal(_mouseX, _mouseY, this.x, this.y, 1, 1, degreesToRadians(15));
+
         if(type === 'RECTANGLE') {
             this.radius = [0, 0, 0, 0];
         }
+
         if(shapeProperties.coords) {
             if(type === 'LINE') {
                 this.x = shapeProperties.coords.start.x;
@@ -45,6 +46,7 @@ export class Shape {
                     this.x = shapeProperties.coords.start.x;
                     this.width = Math.abs(shapeProperties.coords.end.x - shapeProperties.coords.start.x);
                 }
+
                 if(isNegativeHeight) {
                     this.y = shapeProperties.coords.end.y;
                     this.height = Math.abs(shapeProperties.coords.start.y - shapeProperties.coords.end.y);
@@ -65,6 +67,7 @@ export class Shape {
         this.fill = shapeProperties.fill ? shapeProperties.fill : '';
         this.type = type;
     }
+
     public mouseIsOver(e: MouseEvent, offsetX: number, offsetY: number) {
         const mouseX = e.clientX - offsetX;
         const mouseY = e.clientY - offsetY;
@@ -72,9 +75,11 @@ export class Shape {
         if(this.type === 'CIRCLE') {
             return mouseIsInsideEllipse(mouseX, mouseY, offsetX, offsetY, this.x, this.y, this.height, this.width);
         }
+
         if(this.type === 'RECTANGLE') {
             return mouseIsInsideRectangle(mouseX, mouseY, offsetX, offsetY, this.x, this.y, this.height, this.width);
         }
+
         if(this.type === 'LINE') { 
           
             return (
@@ -104,22 +109,24 @@ export class Shape {
         ctx.save();
         const horisontalCenter = this.x + ( this.width / 2);
         const verticalCenter = this.y + (this.height / 2);
-        
+
         ctx.translate(horisontalCenter, verticalCenter);
         ctx.rotate(degreesToRadians(this.rotation));
         ctx.translate(- horisontalCenter, - verticalCenter);
+
         if(this.shadow) {
             this.applyShadow(ctx);
         }
+
         if(this.radius) {
             const radiuses = this.radius.map( x => this.height/2 > x && this.width/2 > x);
             radiuses?.forEach( (r, i) => {
-            if(!r) {
-                this.radius![i] = (this.height / 2);
-            }
-        })
+                if(!r) {
+                    this.radius![i] = (this.height / 2);
+                }
+            })
         }
-        
+
         switch(this.type) {
             case 'RECTANGLE':
                 this.drawRectangle(ctx);
@@ -135,11 +142,13 @@ export class Shape {
 
     public drawCircle(ctx: CanvasRenderingContext2D) {
         ctx.beginPath();
+
         if(this.fill) {
             ctx.fillStyle = this.fill;
             ctx.ellipse(this.x + this.width/2, this.y + this.height/2, this.width/2, this.height/2, 0, 0, 2*Math.PI);
             ctx.fill();
         }
+
         if(this.stroke) {
             ctx.setLineDash([]);
             ctx.strokeStyle = this.stroke.style;
@@ -147,17 +156,16 @@ export class Shape {
             ctx.ellipse(this.x + this.width/2, this.y + this.height/2, this.width/2, this.height/2, 0, 0, 2*Math.PI);
             ctx.stroke();
         }
+
         ctx.restore();
 
         if(this.isSelected) {
             this.drawResizeHandles(ctx);
         }
         ctx.closePath();
-
     }
 
     public drawRectangle(ctx: CanvasRenderingContext2D) {
-        // const getMouseLocal()
         if(this.fill) {
             ctx.fillStyle = this.fill;
             this.roundedRectangle(ctx, this.x, this.y, this.width, this.height, this.radius || [0,0,0,0]);
@@ -174,10 +182,11 @@ export class Shape {
             ctx.strokeStyle = this.stroke.style;
             ctx.lineWidth = this.stroke.width;
             this.roundedRectangle(ctx, this.x, this.y, this.width, this.height, this.radius || [0,0,0,0]);
-            // ctx.strokeRect(this.x, this.y, this.width, this.height);
             ctx.stroke();
         }
+
         ctx.restore();
+
         if(this.isSelected) {
             this.drawResizeHandles(ctx);
             this.drawRadiusHandles(ctx);
@@ -206,16 +215,6 @@ export class Shape {
     }
 
     public drawLine(ctx: CanvasRenderingContext2D) {
-        // if(this.fill) {
-        //     // ctx.fillStyle = this.fill;
-        //     // ctx.fillRect(this.x, this.y, this.width, this.height);
-        // }
-        // if(this.stroke) {
-        //     // ctx.setLineDash([]);
-        //     // ctx.strokeStyle = this.stroke.style;
-        //     // ctx.lineWidth = this.stroke.width;
-        //     // ctx.strokeRect(this.x, this.y, this.width, this.height);
-        // }
         ctx.beginPath();
         ctx.setLineDash([]);
         ctx.strokeStyle = 'black';
@@ -224,12 +223,13 @@ export class Shape {
         ctx.stroke()
         ctx.closePath();
         ctx.restore();
+
         if(this.isSelected) {
             this.drawLineResizeHandles(ctx);
         }
     }
-    drawLineResizeHandles(ctx: CanvasRenderingContext2D) {
 
+    private drawLineResizeHandles(ctx: CanvasRenderingContext2D) {
         ctx.setLineDash([]);
         new ResizeHandle('W', {x: this.x, y: this.y}, Math.abs(this.endX - this.x), Math.abs(this.endY - this.y), ctx);
         // new ResizeHandle('E', {x: this.endX, y: this.endY}, Math.abs(this.endX - this.x), Math.abs(this.endY - this.y), ctx);
@@ -260,17 +260,20 @@ export class Shape {
         ctx.lineWidth = 1;
         ctx.strokeStyle = '#00a7f9';
         ctx.strokeRect(this.x, this.y, this.width, this.height);
-        const handleCoordinate = ["NW", "NE", "SW", "SE", "N", "S", "W", "E"];
+
+        const handleCoordinate = ["NW", "NE", "SW", "SE", "N", "S", "W", "E"] as PolarCoordinate[];
         this.resizeHandles = [];
-        (handleCoordinate as PolarCoordinate[]).forEach(polarPosition=> {
+
+        handleCoordinate.forEach(polarPosition=> {
             this.resizeHandles = [...this.resizeHandles, new ResizeHandle(polarPosition, {x: this.x, y: this.y}, this.width, this.height, ctx)];
         });
+
         const text = `${this.width} x ${this.height}`;
         const infoBoxH = 16;
         const textWidth = ctx.measureText(text).width;
         const infoBoxW = textWidth + 16;
-        ctx.fillStyle = 'rgba(0, 166, 249, 0.7)';
 
+        ctx.fillStyle = 'rgba(0, 166, 249, 0.7)';
         ctx.fillRect(this.x + this.width / 2 - infoBoxW / 2, this.y + this.height + 16 - infoBoxH / 2, infoBoxW, infoBoxH);
         ctx.fillStyle = "#ffffff";
         ctx.textAlign = "center";
