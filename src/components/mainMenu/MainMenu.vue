@@ -25,7 +25,6 @@ import { Vue, Component } from "vue-property-decorator";
 import {
   State,
   namespace,
-  Getter
 } from 'vuex-class';
 
 const toolbar = namespace('toolbar');

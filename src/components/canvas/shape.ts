@@ -68,6 +68,69 @@ export class Shape {
         this.type = type;
     }
 
+    private roundedRectangle(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number[]) {
+        ctx.beginPath();
+        ctx.moveTo(x + radius[0], y);
+        ctx.lineTo(x + width - radius[1], y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius[1]);
+        ctx.lineTo(x + width, y + height - radius[2]);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius[2], y + height);
+        ctx.lineTo(x + radius[3], y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius[3]);
+        ctx.lineTo(x, y + radius[0]);
+        ctx.quadraticCurveTo(x, y, x + radius[0], y);
+        ctx.closePath();
+    }
+
+    private applyShadow(ctx: CanvasRenderingContext2D) {
+        ctx.shadowColor = this.shadow!.color;
+        ctx.shadowBlur = this.shadow!.blur;
+        ctx.shadowOffsetX = this.shadow!.x;
+        ctx.shadowOffsetY = this.shadow!.y;
+    }
+
+    private drawLineResizeHandles(ctx: CanvasRenderingContext2D) {
+        ctx.setLineDash([]);
+        new ResizeHandle('W', {x: this.x, y: this.y}, Math.abs(this.endX - this.x), Math.abs(this.endY - this.y), ctx);
+        // new ResizeHandle('E', {x: this.endX, y: this.endY}, Math.abs(this.endX - this.x), Math.abs(this.endY - this.y), ctx);
+    }
+
+    private drawResizeHandles(ctx: CanvasRenderingContext2D) {
+        ctx.setLineDash([]);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#00a7f9';
+        ctx.strokeRect(this.x, this.y, this.width, this.height);
+
+        const handleCoordinate = ["NW", "NE", "SW", "SE", "N", "S", "W", "E"] as PolarCoordinate[];
+        this.resizeHandles = [];
+
+        handleCoordinate.forEach(polarPosition=> {
+            this.resizeHandles = [...this.resizeHandles, new ResizeHandle(polarPosition, {x: this.x, y: this.y}, this.width, this.height, ctx)];
+        });
+
+        const text = `${this.width} x ${this.height}`;
+        const infoBoxH = 16;
+        const textWidth = ctx.measureText(text).width;
+        const infoBoxW = textWidth + 16;
+
+        ctx.fillStyle = 'rgba(0, 166, 249, 0.7)';
+        ctx.fillRect(this.x + this.width / 2 - infoBoxW / 2, this.y + this.height + 16 - infoBoxH / 2, infoBoxW, infoBoxH);
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.font = "12px Arial";
+        ctx.fillText(text, this.x + this.width / 2, this.y + this.height + 16 + infoBoxH / 3.6);
+    }
+
+    private drawRadiusHandles(ctx: CanvasRenderingContext2D) {
+        const handleCoordinate = ["NW", "NE", "SW", "SE"] as PolarCoordinate[];
+        if(this.type === 'RECTANGLE' && this.width >= 50 && this.height >= 50) {
+            this.radiusHandles = [];
+            handleCoordinate.forEach((polarPosition, index) => {
+                this.radiusHandles = [...this.radiusHandles!, new RadiusHandle(polarPosition, {x: this.x, y: this.y}, this.width, this.height, ctx, this.radius![index])]
+            });
+        }
+    }
+
     public mouseIsOver(e: MouseEvent, offsetX: number, offsetY: number) {
         const mouseX = e.clientX - offsetX;
         const mouseY = e.clientY - offsetY;
@@ -193,27 +256,6 @@ export class Shape {
         }
     }
 
-    private roundedRectangle(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number[]) {
-        ctx.beginPath();
-        ctx.moveTo(x + radius[0], y);
-        ctx.lineTo(x + width - radius[1], y);
-        ctx.quadraticCurveTo(x + width, y, x + width, y + radius[1]);
-        ctx.lineTo(x + width, y + height - radius[2]);
-        ctx.quadraticCurveTo(x + width, y + height, x + width - radius[2], y + height);
-        ctx.lineTo(x + radius[3], y + height);
-        ctx.quadraticCurveTo(x, y + height, x, y + height - radius[3]);
-        ctx.lineTo(x, y + radius[0]);
-        ctx.quadraticCurveTo(x, y, x + radius[0], y);
-        ctx.closePath();
-    }
-
-    private applyShadow(ctx: CanvasRenderingContext2D) {
-        ctx.shadowColor = this.shadow!.color;
-        ctx.shadowBlur = this.shadow!.blur;
-        ctx.shadowOffsetX = this.shadow!.x;
-        ctx.shadowOffsetY = this.shadow!.y;
-    }
-
     public drawLine(ctx: CanvasRenderingContext2D) {
         ctx.beginPath();
         ctx.setLineDash([]);
@@ -229,22 +271,6 @@ export class Shape {
         }
     }
 
-    private drawLineResizeHandles(ctx: CanvasRenderingContext2D) {
-        ctx.setLineDash([]);
-        new ResizeHandle('W', {x: this.x, y: this.y}, Math.abs(this.endX - this.x), Math.abs(this.endY - this.y), ctx);
-        // new ResizeHandle('E', {x: this.endX, y: this.endY}, Math.abs(this.endX - this.x), Math.abs(this.endY - this.y), ctx);
-    }
-
-    private drawRadiusHandles(ctx: CanvasRenderingContext2D) {
-        const handleCoordinate = ["NW", "NE", "SW", "SE"];
-        if(this.type === 'RECTANGLE' && this.width >= 50 && this.height >= 50) {
-            this.radiusHandles = [];
-            (handleCoordinate as PolarCoordinate[]).forEach((polarPosition, index) => {
-                this.radiusHandles = [...this.radiusHandles!, new RadiusHandle(polarPosition, {x: this.x, y: this.y}, this.width, this.height, ctx, this.radius![index])]
-            });
-        }
-    }
-
     public mouseIsOverRadiusHandle(mouseX: number, mouseY: number) {
         if(this.type === 'RECTANGLE') {
             return this.radiusHandles?.find(x => x.mouseIsOver(mouseX, mouseY))?.position || null;
@@ -255,29 +281,4 @@ export class Shape {
         return this.resizeHandles.find(x => x.mouseIsOver(mouseX, mouseY))?.position || null;
     }
 
-    private drawResizeHandles(ctx: CanvasRenderingContext2D) {
-        ctx.setLineDash([]);
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = '#00a7f9';
-        ctx.strokeRect(this.x, this.y, this.width, this.height);
-
-        const handleCoordinate = ["NW", "NE", "SW", "SE", "N", "S", "W", "E"] as PolarCoordinate[];
-        this.resizeHandles = [];
-
-        handleCoordinate.forEach(polarPosition=> {
-            this.resizeHandles = [...this.resizeHandles, new ResizeHandle(polarPosition, {x: this.x, y: this.y}, this.width, this.height, ctx)];
-        });
-
-        const text = `${this.width} x ${this.height}`;
-        const infoBoxH = 16;
-        const textWidth = ctx.measureText(text).width;
-        const infoBoxW = textWidth + 16;
-
-        ctx.fillStyle = 'rgba(0, 166, 249, 0.7)';
-        ctx.fillRect(this.x + this.width / 2 - infoBoxW / 2, this.y + this.height + 16 - infoBoxH / 2, infoBoxW, infoBoxH);
-        ctx.fillStyle = "#ffffff";
-        ctx.textAlign = "center";
-        ctx.font = "12px Arial";
-        ctx.fillText(text, this.x + this.width / 2, this.y + this.height + 16 + infoBoxH / 3.6);
-    }
 }

@@ -12,7 +12,7 @@ import {
 } from 'vuex-class'
 import { Color } from '@/store/properties/types';
 import { Tool, ToolbarStore } from '@/store/toolbar/types';
-import { degreesToRadians, getMouseLocal, setTransform } from '@/helpers/geometry';
+import { degreesToRadians, getMouseLocal } from '@/helpers/geometry';
 import { drawShapeGhost } from './shapeGhost';
 
 const properties = namespace('properties');
@@ -303,6 +303,7 @@ export default class Canvas extends Vue {
             }
         }
     }
+
     private setResizeMousePointer(activeResizeHandle: PolarCoordinate, canvasElement: HTMLCanvasElement) {
         switch(activeResizeHandle) {
             case 'N':
@@ -327,6 +328,7 @@ export default class Canvas extends Vue {
                 break;
         }
     }
+
     private makeRadius(mouseX: number, mouseY: number) {
         this.activeResizeModifier = null;
             let dX = 0;
@@ -339,6 +341,7 @@ export default class Canvas extends Vue {
                 this.$store.dispatch('properties/setCurrentShape', { radius: [dX, dX, dX, dX]});
             }
     }
+
     private resize(mouseX: number, mouseY: number) {
         this.activeRadiusModifier = null;
             const originalShapeX = this.getX;
@@ -391,7 +394,7 @@ export default class Canvas extends Vue {
             }
     }
 
-    public onKeyDown(e: KeyboardEvent) {
+    private onKeyDown(e: KeyboardEvent) {
         e.preventDefault();
         const shiftIsPressed = e.shiftKey;
         const ctrlIsPressed = e.ctrlKey || e.metaKey;
@@ -504,21 +507,6 @@ export default class Canvas extends Vue {
     private setCanvasSize() {
         this.canvas!.width = window.innerWidth;
         this.canvas!.height = window.innerHeight;
-    }
-
-    private mouseIsOverElement(e: MouseEvent, shape: any): boolean {
-        const mouseX = e.clientX - this.offsetX;
-        const mouseY = e.clientY - this.offsetY;
-        if (
-            mouseX > shape.x &&
-            mouseX < shape.x + shape.width &&
-            mouseY > shape.y &&
-            mouseY < shape.y + shape.height
-            ) {
-                return true;
-            } else {
-                return false;
-            }
     }
 
     private draw(): void {
