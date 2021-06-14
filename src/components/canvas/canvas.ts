@@ -57,6 +57,7 @@ export class Canvas extends Vue {
     private copyShapes: string[] = [];
     private activeRadiusModifier: PolarCoordinate | null = null;
     private activeResizeModifier: PolarCoordinate | null = null;
+    private scale = 1;
 
     @Watch('getRotation')
     private rotationChanged(rotation: number) {
@@ -148,6 +149,19 @@ export class Canvas extends Vue {
         this.canvas.addEventListener("keydown", this.onKeyDown);
         this.canvas.addEventListener("keyup", this.onKeyUp);
         this.canvas.addEventListener("contextmenu", this.showContextMenu);
+        this.canvas.addEventListener("wheel", this.onZoom);
+    }
+
+    private onZoom(e: WheelEvent) {
+        e.preventDefault();
+        this.scale += e.deltaY * -0.001;
+        this.scale = Math.min(Math.max(0.123, this.scale), 50);
+        for(const shapeId in this.shapes) {
+            const shape = this.shapes[shapeId];
+            shape.scale = this.scale;
+        }
+        this.ctx!.scale(this.scale, this.scale);
+        this.draw();
     }
 
     private mouseDown(e: MouseEvent) {
@@ -221,7 +235,6 @@ export class Canvas extends Vue {
             const fill = this.getShapeProperties.fill;
             const stroke = this.getShapeProperties.stroke;
             const s = new Shape((this.getActiveTool as ShapeName), { coords: {start: {...this.startPoint}, end: this.mouse}, fill: fill, stroke });
-            s.scale = 2;
             this.$set(this.shapes, s.id, s);
             this.draw();
         }
