@@ -155,12 +155,11 @@ export class Canvas extends Vue {
     private onZoom(e: WheelEvent) {
         e.preventDefault();
         this.scale += e.deltaY * -0.001;
-        this.scale = Math.min(Math.max(0.123, this.scale), 50);
+        this.scale = Math.min(Math.max(0.123, this.scale), 25);
         for(const shapeId in this.shapes) {
             const shape = this.shapes[shapeId];
             shape.scale = this.scale;
         }
-        this.ctx!.scale(this.scale, this.scale);
         this.draw();
     }
 
