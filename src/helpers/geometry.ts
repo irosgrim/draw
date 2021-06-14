@@ -26,12 +26,23 @@ export const mouseIsInsideRectangle = (
     rectangleX: number,
     rectangleY: number,
     h: number,
-    w: number
+    w: number,
+    rotation: number
     ): boolean => {
     const mX = mouseX ;
     const mY = mouseY ;
+
+    const localMouse = getMouseLocal(
+        mouseX,
+        mouseY,
+        rectangleX + w / 2,
+        rectangleY + h / 2,
+        1,
+        1,
+        degreesToRadians(rotation)
+      );
     
-    return (mX > rectangleX && mX < rectangleX + w && mY > rectangleY && mY < rectangleY + h)
+    return (localMouse.x > -w/2 && localMouse.x < w/2 && localMouse.y < h/2 &&localMouse.y > -h/2);
 }
 
 export const setTransform = (ctx: CanvasRenderingContext2D, x: number, y: number, scaleX: number, scaleY: number, rotation: number) => {

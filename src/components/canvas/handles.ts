@@ -27,15 +27,18 @@ export class ResizeHandle {
     private handleSize = 9;
     public x = 0;
     public y = 0;
-    constructor(public position: PolarCoordinate, private coords: Coords, private shapeWidth: number, private shapeHeight: number, private ctx: CanvasRenderingContext2D) {
+    private scale = 1;
+    constructor(public position: PolarCoordinate, private coords: Coords, private shapeWidth: number, private shapeHeight: number, private ctx: CanvasRenderingContext2D, scale: number) {
+        this.scale = scale;
         this.createHandle();
     }
 
     private draw(x: number, y: number) {
         this.x = x;
         this.y = y;
-        this.ctx.fillRect(x, y, this.handleSize, this.handleSize);
-        this.ctx.strokeRect(x, y, this.handleSize, this.handleSize);
+        this.ctx.lineWidth = 1/ this.scale;
+        this.ctx.fillRect(x, y, this.handleSize / this.scale, this.handleSize / this.scale);
+        this.ctx.strokeRect(x, y, this.handleSize / this.scale, this.handleSize / this.scale);
     }
 
     private createHandle() {
