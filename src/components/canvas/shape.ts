@@ -217,7 +217,7 @@ export class Shape {
 
         if(this.fill) {
             ctx.fillStyle = this.fill;
-            ctx.ellipse(-this.width/2, -this.height/2, this.width/2, this.height/2, 0, 0, 2*Math.PI);
+            ctx.ellipse(0, 0, this.width/2, this.height/2, 0, 0, 2*Math.PI);
             ctx.fill();
         }
 
