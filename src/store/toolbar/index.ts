@@ -56,7 +56,7 @@ export const toolbarStore: ToolbarStore = {
             shortcut: '',
             icon: 'layers.svg',
             selected: false,
-            disabled: true
+            disabled: false
         }
     },
     activeTool: 'SELECT',

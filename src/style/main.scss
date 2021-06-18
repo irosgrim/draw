@@ -1,3 +1,6 @@
+html, body {
+    height: 100%;
+}
 body {
     font-family: 'Open Sans', sans-serif;
     font-size: 0.75rem;
@@ -79,6 +82,8 @@ input[type="text"] {
     top: 16px;
     left: 16px;
     z-index: 2;
+}
+.tb {
     background-color: #ffffff;
     border: 1px solid #dadada;
     border-radius: 6px;
@@ -106,6 +111,9 @@ input[type="text"] {
 }
 .selected {
     background-color: #c9e9fc;
+}
+.selected-layer {
+    background-color: #e7eef1;
 }
 .context-menu {
     position: absolute;

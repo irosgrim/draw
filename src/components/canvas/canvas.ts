@@ -12,12 +12,14 @@ import { drawShapeGhost } from './shapeGhost';
 
 const properties = namespace('properties');
 const toolbar = namespace('toolbar');
+const canvas = namespace('canvas');
 
 let timer: number;
 @Component
 export class Canvas extends Vue {
     @Prop() saveCanvas!: boolean;
     @State('toolbar') private toolbar!: ToolbarStore;
+    @canvas.Getter('getShapes') getShapes!: Dictionary<Shape>;
     @toolbar.Getter('getActiveTool') getActiveTool!: Tool;
 
     @properties.Getter('getId') public getShapeId!: string;
@@ -58,6 +60,8 @@ export class Canvas extends Vue {
     private activeRadiusModifier: PolarCoordinate | null = null;
     private activeResizeModifier: PolarCoordinate | null = null;
     private scale = 1;
+    private lastX = 0;
+    private lastY = 0;
 
     @Watch('getRotation')
     private rotationChanged(rotation: number) {
@@ -143,9 +147,11 @@ export class Canvas extends Vue {
         this.offsetX = canvasBounding.left;
         this.offsetY = canvasBounding.top;
 
-        this.canvas.addEventListener("mousedown", this.mouseDown);
-        this.canvas.addEventListener("mouseup", this.mouseUp);
-        this.canvas.addEventListener("mousemove", this.mouseMove);
+        // this.canvas.addEventListener("mousedown", this.mouseDown);
+        // this.canvas.addEventListener("mouseup", this.mouseUp);
+        // this.canvas.addEventListener("mousemove", this.mouseMove);
+        this.update();
+        this.attachMouseEvents();
         this.canvas.addEventListener("keydown", this.onKeyDown);
         this.canvas.addEventListener("keyup", this.onKeyUp);
         this.canvas.addEventListener("contextmenu", this.showContextMenu);
@@ -234,8 +240,11 @@ export class Canvas extends Vue {
             const fill = this.getShapeProperties.fill;
             const stroke = this.getShapeProperties.stroke;
             const s = new Shape((this.getActiveTool as ShapeName), { coords: {start: {...this.startPoint}, end: this.mouse}, fill: fill, stroke });
-            this.$set(this.shapes, s.id, s);
-            this.draw();
+            // this.$set(this.shapes, s.id, s);
+            this.shapes = {[s.id]: s, ...this.shapes};
+            this.$store.commit('canvas/newShape', {id: s.id, shape: s})
+            // this.draw();
+            this.redrawCanvas = true;
         }
         this.resetActiveTool();
     }
@@ -284,7 +293,8 @@ export class Canvas extends Vue {
 
         }
         if(this.mouseIsDown && !this.activeRadiusModifier && !this.activeResizeModifier) {
-            this.draw();
+            // this.draw();
+            this.redrawCanvas = true;
             if(this.getActiveTool === 'SELECT') {
                 for (const id in this.shapes) {
                     const shape = this.shapes[id];
@@ -311,10 +321,12 @@ export class Canvas extends Vue {
                 return;
             }
             if(['RECTANGLE', 'CIRCLE', 'LINE'].includes(this.getActiveTool)) {
+                // this.redrawCanvas = true;
                 this.ctx!.setTransform(1, 0, 0, 1, 0, 0);
                 drawShapeGhost(this.startPoint.x, this.startPoint.y, this.mouse.x, this.mouse.y, this.ctx!, (this.getActiveTool as ShapeName))
             }
         }
+        // this.redrawCanvas = false;
     }
 
     private setResizeMousePointer(activeResizeHandle: PolarCoordinate, canvasElement: HTMLCanvasElement) {
@@ -417,11 +429,13 @@ export class Canvas extends Vue {
                     shift: shiftIsPressed, 
                     ctrl: ctrlIsPressed
                 });
-                this.draw();
+                // this.draw();
+                this.redrawCanvas = true;
             }
             if(e.code === 'Backspace' || e.code === 'Delete') {
                 this.deleteSelection();
-                this.draw();
+                // this.draw();
+                this.redrawCanvas = true;
             }
         }
     }
@@ -448,7 +462,8 @@ export class Canvas extends Vue {
                 shapeCopy.shadow = shape.shadow;
                 this.shapes = {...this.shapes, [shapeCopy.id]: shapeCopy}
             });
-            this.draw();
+            // this.draw();
+            this.redrawCanvas = true;
         }
         switch(keyCode) {
             case 'h':
@@ -524,8 +539,9 @@ export class Canvas extends Vue {
 
     private draw(): void {
         this.clear();
-        for(const id in this.shapes) {
-            const shape = this.shapes[id];
+        const s = Object.keys(this.shapes);
+        for(let i = s.length - 1; i >= 0; i--) {
+            const shape = this.shapes[s[i]];
             shape.drawShape(this.ctx!);
         }
     }
@@ -539,5 +555,41 @@ export class Canvas extends Vue {
     private showContextMenu(e: MouseEvent): void {
         e.preventDefault();
         this.$store.commit('toolbar/showContextMenu', { visible: true, x: e.clientX, y: e.clientY });
+    }
+
+    private mouseEvents(e: MouseEvent ) {
+        switch(e.type) {
+            case 'mousedown':
+                this.mouseDown(e);
+                break;
+            case 'mouseup':
+                this.mouseUp(e);
+                break;
+            case 'mousemove':
+                this.mouseMove(e);
+                break;
+        }
+
+        // this.redrawCanvas = true;
+    }
+
+    private attachMouseEvents() {
+        const typeOfEvents = ['mousedown', 'mouseup', 'mousemove'];
+        typeOfEvents.forEach(x => {
+            // @ts-ignore
+            this.canvas.addEventListener(x, this.mouseEvents);
+        })
+    }
+
+    private update() {
+        if(this.redrawCanvas) {
+            console.log('drawing');
+
+            this.draw();
+        }
+        this.lastX = this.mouse.x;
+        this.lastY = this.mouse.y;
+        this.redrawCanvas = false;
+        requestAnimationFrame(this.update);
     }
 }
