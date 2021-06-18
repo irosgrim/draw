@@ -1,0 +1,4 @@
+ - [ ] refactor the shape class
+ - [ ] select multiple shapes
+ - [ ] apply styling to selected shapes
+ - [ ] align selected shapes
